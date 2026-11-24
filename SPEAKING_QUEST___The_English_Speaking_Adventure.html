@@ -1,0 +1,4059 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPEAKING QUEST – The English Speaking Adventure</title>
+  <!-- Tipografía moderna y clara para interfaz RPG juvenil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            rpg: {
+              bg: '#070B19',
+              card: '#0D142B',
+              elevated: '#131D3E',
+              border: '#23325E',
+              blue: '#3B82F6',
+              sky: '#38BDF8',
+              violet: '#8B5CF6',
+              purple: '#A855F7',
+              teal: '#14B8A6',
+              mint: '#2DD4BF',
+              gold: '#FACC15',
+              amber: '#F59E0B',
+            }
+          },
+          boxShadow: {
+            'glow-blue': '0 0 24px rgba(59, 130, 246, 0.28)',
+            'glow-violet': '0 0 24px rgba(139, 92, 246, 0.28)',
+            'glow-teal': '0 0 24px rgba(20, 184, 166, 0.25)',
+            'glow-gold': '0 0 24px rgba(250, 204, 21, 0.28)',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Estilos base y microanimaciones de videojuego RPG */
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #070B19;
+      background-image:
+        radial-gradient(circle at 12% 10%, rgba(59, 130, 246, 0.16) 0%, transparent 42%),
+        radial-gradient(circle at 88% 18%, rgba(139, 92, 246, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(20, 184, 166, 0.11) 0%, transparent 50%);
+      color: #F1F5F9;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-float {
+      animation: floatSlow 3.4s ease-in-out infinite;
+    }
+
+    .animate-fade-up {
+      animation: fadeSlideUp 0.28s ease-out forwards;
+    }
+
+    .rpg-panel {
+      background: linear-gradient(155deg, rgba(19, 29, 62, 0.92) 0%, rgba(13, 20, 43, 0.96) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .rpg-card-interactive {
+      background: linear-gradient(160deg, rgba(19, 29, 62, 0.88) 0%, rgba(11, 17, 36, 0.96) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .rpg-card-interactive:hover {
+      transform: translateY(-3px);
+      border-color: rgba(56, 189, 248, 0.52);
+      box-shadow: 0 12px 28px -8px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Cartas de memoria 3D */
+    .memory-card-inner {
+      transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+    }
+
+    .memory-card.flipped .memory-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .memory-face {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .memory-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Scrollbar sutil */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070B19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E2E58;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3B82F6;
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-100 antialiased selection:bg-sky-500/30 selection:text-sky-200">
+  <!-- Contenedor principal de la aplicación -->
+  <div id="app" class="min-h-screen flex flex-col justify-between pb-24 md:pb-8">
+    <!-- Barra superior fija de navegación y HUD -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/90 bg-[#070B19]/90 backdrop-blur-md">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        <!-- Marca SPEAKING QUEST -->
+        <button
+          id="brand-home-btn"
+          type="button"
+          class="flex items-center gap-2.5 text-left group focus:outline-none"
+          aria-label="Ir a Inicio"
+        >
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-violet-500 to-teal-400 p-[1.5px] shadow-glow-blue group-hover:scale-105 transition-transform">
+            <div class="w-full h-full rounded-[10px] bg-[#0B1228] flex items-center justify-center">
+              <!-- Icono SVG de portal/espada de habla -->
+              <svg class="w-5 h-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8L12 2Z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="font-display font-bold text-sm sm:text-base tracking-wide text-white leading-tight flex items-center gap-1.5">
+              <span>SPEAKING QUEST</span>
+              <span class="hidden sm:inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-400/30">A1</span>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">The English Speaking Adventure</p>
+          </div>
+        </button>
+
+        <!-- Navegación principal en escritorio -->
+        <nav class="hidden md:flex items-center gap-1.5 bg-[#0D142B] p-1 rounded-xl border border-slate-800" aria-label="Navegación principal">
+          <button data-nav="home" class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">HOME</button>
+          <button data-nav="map" class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">MAP</button>
+          <button data-nav="practice" class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">PRACTICE</button>
+          <button data-nav="progress" class="nav-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">PROGRESS</button>
+        </nav>
+
+        <!-- Mini HUD compacto + Sonido -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="flex items-center gap-2 bg-[#0D142B] border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs">
+            <span class="text-sky-400 font-bold" id="hud-top-xp">0 XP</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-amber-300 font-bold" id="hud-top-stars">0 ★</span>
+            <span class="hidden sm:inline text-slate-600">•</span>
+            <span class="hidden sm:inline text-teal-300 font-bold" id="hud-top-coins">0 🪙</span>
+          </div>
+
+          <button
+            id="sound-toggle-btn"
+            type="button"
+            class="w-9 h-9 rounded-xl bg-[#0D142B] hover:bg-[#172347] border border-slate-800 flex items-center justify-center text-slate-300 hover:text-sky-300 transition"
+            title="Activar o silenciar efectos de sonido"
+            aria-label="Activar o silenciar efectos de sonido"
+          >
+            <svg id="sound-icon-on" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+            <svg id="sound-icon-off" class="w-4 h-4 hidden text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toast de notificación de recompensa / insignia -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Área dinámica principal -->
+    <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-6"></main>
+
+    <!-- Navegación inferior fija en móviles -->
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0A1024]/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around" aria-label="Navegación móvil">
+      <button data-nav="home" class="nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-semibold transition">
+        <span>🏠</span>
+        <span>HOME</span>
+      </button>
+      <button data-nav="map" class="nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-semibold transition">
+        <span>🗺️</span>
+        <span>MAP</span>
+      </button>
+      <button data-nav="practice" class="nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-semibold transition">
+        <span>⚡</span>
+        <span>PRACTICE</span>
+      </button>
+      <button data-nav="progress" class="nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-semibold transition">
+        <span>🏆</span>
+        <span>PROGRESS</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. SISTEMA DE SONIDO SUAVE (WEB AUDIO API SIN ARCHIVOS EXTERNOS)
+       ========================================================================= */
+    const SoundFX = (() => {
+      let ctx = null;
+      let enabled = true;
+
+      function ensureContext() {
+        if (!enabled) return null;
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            ctx = new AudioCtx();
+          }
+        }
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        return ctx;
+      }
+
+      function playTone(freq, duration, type = 'sine', delay = 0, gainPeak = 0.08) {
+        const audio = ensureContext();
+        if (!audio) return;
+        try {
+          const now = audio.currentTime + delay;
+          const osc = audio.createOscillator();
+          const gain = audio.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(gainPeak, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+          osc.connect(gain);
+          gain.connect(audio.destination);
+          osc.start(now);
+          osc.stop(now + duration + 0.02);
+        } catch (err) {
+          // Ignorar errores de audio en navegadores restringidos
+        }
+      }
+
+      return {
+        setEnabled(val) {
+          enabled = Boolean(val);
+        },
+        isEnabled() {
+          return enabled;
+        },
+        click() {
+          playTone(520, 0.07, 'triangle', 0, 0.05);
+        },
+        correct() {
+          playTone(587.33, 0.12, 'triangle', 0, 0.08);
+          playTone(880, 0.18, 'triangle', 0.09, 0.09);
+        },
+        wrong() {
+          playTone(260, 0.14, 'sawtooth', 0, 0.05);
+          playTone(195, 0.18, 'sawtooth', 0.11, 0.05);
+        },
+        fanfare() {
+          playTone(523.25, 0.13, 'triangle', 0, 0.08);
+          playTone(659.25, 0.13, 'triangle', 0.11, 0.08);
+          playTone(783.99, 0.15, 'triangle', 0.22, 0.09);
+          playTone(1046.5, 0.28, 'triangle', 0.34, 0.1);
+        }
+      };
+    })();
+
+    /* =========================================================================
+       2. CONTENIDO CURRICULAR ESTRICTO (NIVEL A1 - ESPAÑOL / INGLÉS)
+       ========================================================================= */
+
+    // MUNDO 1: Exactamente 13 verbos en inglés con traducción española, ejemplo y SVG propio
+    const VOCAB_VERBS = [
+      { id: 'eat', verb: 'EAT', es: 'comer', example: 'I eat fruit in the morning.', hint: 'Alimentos / comida' },
+      { id: 'drink', verb: 'DRINK', es: 'beber / tomar', example: 'She drinks water every day.', hint: 'Líquidos / vaso' },
+      { id: 'have', verb: 'HAVE', es: 'tener / tomar (comida)', example: 'We have breakfast at 7:00 a.m.', hint: 'Poseer o desayunar/almorzar' },
+      { id: 'do', verb: 'DO', es: 'hacer', example: 'I do my homework after class.', hint: 'Realizar una acción o tarea' },
+      { id: 'read', verb: 'READ', es: 'leer', example: 'He reads a book at night.', hint: 'Libros, textos o noticias' },
+      { id: 'study', verb: 'STUDY', es: 'estudiar', example: 'We study English for the test.', hint: 'Repasar materias o lecciones' },
+      { id: 'get_up', verb: 'GET UP', es: 'levantarse', example: 'I get up at 6:30 a.m.', hint: 'Salir de la cama por la mañana' },
+      { id: 'run', verb: 'RUN', es: 'correr', example: 'They run in the park.', hint: 'Avanzar rápido a pie' },
+      { id: 'go', verb: 'GO', es: 'ir', example: 'I go to university on Tuesdays.', hint: 'Desplazarse a un lugar' },
+      { id: 'play', verb: 'PLAY', es: 'jugar / tocar', example: 'He plays video games on Mondays.', hint: 'Videojuegos o deportes' },
+      { id: 'work', verb: 'WORK', es: 'trabajar', example: 'Jackson works from 8:00 a.m.', hint: 'Actividad laboral' },
+      { id: 'swim', verb: 'SWIM', es: 'nadar', example: 'She swims in the pool.', hint: 'Moverse en el agua' },
+      { id: 'take', verb: 'TAKE', es: 'tomar / llevar', example: 'I take notes in class.', hint: 'Tomar o llevar algo' }
+    ];
+
+    // Ilustraciones SVG personalizadas para cada uno de los 13 verbos
+    function renderVerbSVG(verbId, sizeClass = 'w-14 h-14') {
+      const svgs = {
+        eat: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="34" r="20" fill="#1E293B" stroke="#38BDF8" stroke-width="2.5"/>
+          <ellipse cx="32" cy="36" rx="13" ry="8" fill="#FACC15" opacity="0.9"/>
+          <circle cx="27" cy="35" r="3" fill="#14B8A6"/>
+          <circle cx="37" cy="35" r="3" fill="#F43F5E"/>
+          <path d="M12 18V46M9 18V28M15 18V28" stroke="#E2E8F0" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M52 18V46" stroke="#E2E8F0" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>`,
+        drink: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <path d="M21 18H43L39 50H25L21 18Z" fill="#0F172A" stroke="#2DD4BF" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M23.5 31H40.5L39 48H25L23.5 31Z" fill="#38BDF8" fill-opacity="0.45"/>
+          <path d="M35 18L41 9H46" stroke="#FACC15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="29" cy="38" r="2" fill="#E0F2FE"/>
+        </svg>`,
+        have: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <path d="M32 52C32 52 12 39.5 12 24.5C12 18.5 17 14 22.8 14C26.8 14 30.2 16.2 32 19.5C33.8 16.2 37.2 14 41.2 14C47 14 52 18.5 52 24.5C52 39.5 32 52 32 52Z" fill="#8B5CF6" fill-opacity="0.35" stroke="#A855F7" stroke-width="2.5"/>
+          <circle cx="32" cy="29" r="5" fill="#FACC15"/>
+        </svg>`,
+        do: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <rect x="14" y="12" width="36" height="40" rx="6" fill="#0F172A" stroke="#3B82F6" stroke-width="2.5"/>
+          <path d="M22 25L27 30L36 21" stroke="#2DD4BF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="22" y1="39" x2="42" y2="39" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="22" y1="45" x2="34" y2="45" stroke="#64748B" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>`,
+        read: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <path d="M32 20C25 15.5 16 15.5 10 18V47C16 44.5 25 44.5 32 49C39 44.5 48 44.5 54 47V18C48 15.5 39 15.5 32 20Z" fill="#131D3E" stroke="#38BDF8" stroke-width="2.5" stroke-linejoin="round"/>
+          <line x1="32" y1="20" x2="32" y2="49" stroke="#38BDF8" stroke-width="2.2"/>
+          <line x1="16" y1="26" x2="26" y2="26" stroke="#FACC15" stroke-width="2" stroke-linecap="round"/>
+          <line x1="38" y1="26" x2="48" y2="26" stroke="#2DD4BF" stroke-width="2" stroke-linecap="round"/>
+        </svg>`,
+        study: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <polygon points="32,12 54,22 32,32 10,22" fill="#8B5CF6" fill-opacity="0.4" stroke="#A855F7" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M20 27V39C20 43 25.4 46 32 46C38.6 46 44 43 44 39V27" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="52" y1="23" x2="52" y2="38" stroke="#FACC15" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>`,
+        get_up: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <path d="M12 44H52M16 44V34M48 44V30" stroke="#38BDF8" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="32" cy="24" r="8" fill="#FACC15" fill-opacity="0.3" stroke="#FACC15" stroke-width="2.4"/>
+          <path d="M32 10V13M20 14L22 16M44 14L42 16" stroke="#FACC15" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>`,
+        run: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <circle cx="40" cy="15" r="5.5" fill="#2DD4BF"/>
+          <path d="M24 30L36 24L44 31L51 28" stroke="#38BDF8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M35 25L29 38L18 46" stroke="#A855F7" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M31 35L41 40L44 51" stroke="#FACC15" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 26H18M12 34H19" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+        </svg>`,
+        go: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="20" fill="#0F172A" stroke="#3B82F6" stroke-width="2.5"/>
+          <path d="M22 32H41M41 32L34 25M41 32L34 39" stroke="#2DD4BF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`,
+        play: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <rect x="11" y="21" width="42" height="24" rx="11" fill="#131D3E" stroke="#A855F7" stroke-width="2.5"/>
+          <path d="M22 29V37M18 33H26" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="40" cy="30" r="2.5" fill="#FACC15"/>
+          <circle cx="45" cy="35" r="2.5" fill="#2DD4BF"/>
+        </svg>`,
+        work: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <rect x="13" y="23" width="38" height="26" rx="5" fill="#0F172A" stroke="#F59E0B" stroke-width="2.5"/>
+          <path d="M25 23V17C25 15.3 26.3 14 28 14H36C37.7 14 39 15.3 39 17V23" stroke="#FACC15" stroke-width="2.5"/>
+          <line x1="13" y1="34" x2="51" y2="34" stroke="#38BDF8" stroke-width="2"/>
+        </svg>`,
+        swim: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <circle cx="41" cy="21" r="5" fill="#FACC15"/>
+          <path d="M18 35L32 28L42 33" stroke="#38BDF8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 43C15 40 20 46 25 43C30 40 35 46 40 43C45 40 50 46 54 43" stroke="#2DD4BF" stroke-width="2.8" stroke-linecap="round"/>
+          <path d="M10 50C15 47 20 53 25 50C30 47 35 53 40 50C45 47 50 53 54 50" stroke="#3B82F6" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>`,
+        take: `<svg class="${sizeClass}" viewBox="0 0 64 64" fill="none">
+          <rect x="14" y="18" width="36" height="30" rx="6" fill="#0F172A" stroke="#2DD4BF" stroke-width="2.5"/>
+          <circle cx="32" cy="33" r="8" fill="#3B82F6" fill-opacity="0.3" stroke="#38BDF8" stroke-width="2.4"/>
+          <path d="M24 18L27 13H37L40 18" stroke="#FACC15" stroke-width="2.3" stroke-linejoin="round"/>
+        </svg>`
+      };
+      return svgs[verbId] || svgs.do;
+    }
+
+    // MUNDO 2: Marcadores de tiempo estrictos y ejemplos del material
+    const TIME_TRAVEL_MARKERS = [
+      {
+        marker: 'YESTERDAY',
+        tense: 'PAST SIMPLE',
+        badgeColor: 'text-amber-300 bg-amber-500/15 border-amber-400/30',
+        example: 'She went to the gym.',
+        esExplanation: 'Past Simple: se usa para acciones terminadas en el pasado (como ayer). En este ejemplo, WENT es el pasado de GO.',
+        ruleShort: 'Verbo en pasado (ej. went, studied, got up).'
+      },
+      {
+        marker: 'ON MONDAYS',
+        tense: 'PRESENT SIMPLE',
+        badgeColor: 'text-sky-300 bg-sky-500/15 border-sky-400/30',
+        example: 'She gets up at 7:00 a.m.',
+        esExplanation: 'Present Simple: se usa para rutinas o hábitos (como los lunes). Con HE / SHE / IT se agrega -S al verbo base (gets up).',
+        ruleShort: 'Verbo base y -S con he/she/it (ej. gets up).'
+      },
+      {
+        marker: 'NOW',
+        tense: 'PRESENT CONTINUOUS',
+        badgeColor: 'text-teal-300 bg-teal-500/15 border-teal-400/30',
+        example: 'She is studying now.',
+        esExplanation: 'Present Continuous: se usa para acciones que ocurren en este momento (now). Se forma con AM / IS / ARE + verbo con -ING (is studying).',
+        ruleShort: 'Am / is / are + verbo -ING (ej. is studying).'
+      }
+    ];
+
+    const TIME_CLASSIFY_ITEMS = [
+      { sentence: 'She went to the gym.', marker: 'YESTERDAY', tense: 'PAST SIMPLE', es: 'Acción pasada terminada (went).' },
+      { sentence: 'She gets up at 7:00 a.m.', marker: 'ON MONDAYS', tense: 'PRESENT SIMPLE', es: 'Rutina habitual con -s en tercera persona (gets up).' },
+      { sentence: 'She is studying now.', marker: 'NOW', tense: 'PRESENT CONTINUOUS', es: 'Acción en desarrollo ahora mismo (is studying).' },
+      { sentence: 'Thomas had rice and fish at 1:00 p.m.', marker: 'ON MONDAYS', tense: 'PRESENT SIMPLE', es: 'Rutina de los lunes en el horario de Thomas.' },
+      { sentence: 'Jackson is taking a selfie now.', marker: 'NOW', tense: 'PRESENT CONTINUOUS', es: 'Estructura am/is/are + verbo -ING en el momento actual.' },
+      { sentence: 'Jenny Kim woke up at 5:00 a.m.', marker: 'YESTERDAY', tense: 'PAST SIMPLE', es: 'Acción ocurrida ayer (woke up).' }
+    ];
+
+    const TIME_STRUCTURE_QUESTIONS = [
+      {
+        prompt: 'Para hablar de una acción que ocurre AHORA mismo, ¿qué estructura usas?',
+        options: ['am / is / are + verbo -ING', 'verbo base solo sin cambios', 'did + verbo en pasado'],
+        answer: 'am / is / are + verbo -ING',
+        es: 'El Present Continuous (NOW) usa am/is/are + verbo con -ING, como en "She is studying now."'
+      },
+      {
+        prompt: 'En Present Simple con SHE / HE / IT para hábitos (ON MONDAYS), ¿qué ocurre con el verbo?',
+        options: ['Lleva -S con he/she/it (ej. gets up)', 'Siempre lleva -ING', 'Siempre cambia a pasado irregular'],
+        answer: 'Lleva -S con he/she/it (ej. gets up)',
+        es: 'Según el material, en Present Simple se usa el verbo base y -S con he/she/it, como "She gets up at 7:00 a.m."'
+      },
+      {
+        prompt: 'Para expresar una acción terminada ayer (YESTERDAY), ¿qué tiempo corresponde?',
+        options: ['PAST SIMPLE (verbo en pasado)', 'PRESENT CONTINUOUS (is + -ING)', 'PRESENT SIMPLE con -s de rutina'],
+        answer: 'PAST SIMPLE (verbo en pasado)',
+        es: 'YESTERDAY corresponde a PAST SIMPLE, usando el verbo en pasado, como "She went to the gym."'
+      }
+    ];
+
+    const TIME_COMPLETE_ITEMS = [
+      {
+        before: 'Yesterday, she',
+        after: 'to the gym.',
+        options: ['went', 'goes', 'is going'],
+        answer: 'went',
+        es: 'Con "Yesterday" usamos pasado: went.'
+      },
+      {
+        before: 'On Mondays, she',
+        after: 'at 7:00 a.m.',
+        options: ['gets up', 'got up', 'is getting up'],
+        answer: 'gets up',
+        es: 'Con "On Mondays" (rutina) y "she" usamos Present Simple con -s: gets up.'
+      },
+      {
+        before: 'Now, she',
+        after: 'now.',
+        options: ['is studying', 'studied', 'studies'],
+        answer: 'is studying',
+        es: 'Con "Now" usamos Present Continuous (is + verbo -ING): is studying.'
+      },
+      {
+        before: 'Yesterday, Thomas',
+        after: 'the alarm at 7:00 a.m.',
+        options: ['got up', 'is getting up', 'gets up'],
+        answer: 'got up',
+        es: 'Acción de ayer en pasado: got up.'
+      }
+    ];
+
+    const TIME_ORDER_ITEMS = [
+      {
+        words: ['She', 'went', 'to', 'the', 'gym.'],
+        correct: 'She went to the gym.',
+        es: 'Ejemplo clave de YESTERDAY (Past Simple).'
+      },
+      {
+        words: ['She', 'is', 'studying', 'now.'],
+        correct: 'She is studying now.',
+        es: 'Ejemplo clave de NOW (Present Continuous: is + studying).'
+      },
+      {
+        words: ['She', 'gets', 'up', 'at', '7:00', 'a.m.'],
+        correct: 'She gets up at 7:00 a.m.',
+        es: 'Ejemplo clave de ON MONDAYS (Present Simple con -s).'
+      }
+    ];
+
+    const TIME_ERROR_ITEMS = [
+      {
+        wrongSentence: 'Yesterday, she goes to the gym.',
+        highlight: 'goes',
+        options: ['Cambiar "goes" por "went" (pasado)', 'Cambiar "she" por "they"', 'Agregar "now" al final'],
+        answer: 'Cambiar "goes" por "went" (pasado)',
+        es: 'Como dice "Yesterday", el verbo debe ir en pasado: "She went to the gym."'
+      },
+      {
+        wrongSentence: 'Now, she study English.',
+        highlight: 'study',
+        options: ['Cambiar "study" por "is studying" (am/is/are + -ING)', 'Cambiar "Now" por "Yesterday"', 'Quitar "she"'],
+        answer: 'Cambiar "study" por "is studying" (am/is/are + -ING)',
+        es: 'Para "Now" se usa Present Continuous: "She is studying now."'
+      },
+      {
+        wrongSentence: 'On Mondays, she getting up at 7:00 a.m.',
+        highlight: 'getting up',
+        options: ['Cambiar "getting up" por "gets up" (Present Simple)', 'Usar "went"', 'Decir "is get up"'],
+        answer: 'Cambiar "getting up" por "gets up" (Present Simple)',
+        es: 'Para rutinas de los lunes con "she" se usa Present Simple: "She gets up at 7:00 a.m."'
+      }
+    ];
+
+    // MUNDO 3: EXCLUSIVAMENTE las 12 transformaciones de pasado del material
+    const PAST_VERBS = [
+      { base: 'GET UP', past: 'GOT UP', es: 'levantarse → se levantó', note: 'Pasado irregular: got up.' },
+      { base: 'GO', past: 'WENT', es: 'ir → fue', note: 'Pasado irregular: went.' },
+      { base: 'HAVE', past: 'HAD', es: 'tener / tomar → tuvo / tomó', note: 'Pasado irregular: had.' },
+      { base: 'DRINK', past: 'DRANK', es: 'beber → bebió', note: 'Pasado irregular: drank.' },
+      { base: 'EAT', past: 'ATE', es: 'comer → comió', note: 'Pasado irregular: ate.' },
+      {
+        base: 'READ',
+        past: 'READ',
+        es: 'leer → leyó',
+        note: '¡Atención! READ mantiene la escritura en pasado, pero se pronuncia RED.'
+      },
+      { base: 'WAKE UP', past: 'WOKE UP', es: 'despertarse → se despertó', note: 'Pasado irregular: woke up.' },
+      { base: 'SLEEP', past: 'SLEPT', es: 'dormir → durmió', note: 'Pasado irregular: slept.' },
+      { base: 'GET', past: 'GOT', es: 'obtener / llegar → obtuvo / llegó', note: 'Pasado irregular: got.' },
+      { base: 'SEE', past: 'SAW', es: 'ver → vio', note: 'Pasado irregular: saw.' },
+      { base: 'DO', past: 'DID', es: 'hacer → hizo', note: 'Pasado irregular: did.' },
+      { base: 'STUDY', past: 'STUDIED', es: 'estudiar → estudió', note: 'Cambia -y por -ied: studied.' }
+    ];
+
+    const PAST_SENTENCE_ITEMS = [
+      {
+        before: 'Yesterday, I',
+        after: 'at 6:30 a.m.',
+        options: ['GOT UP', 'GET UP', 'WENT'],
+        answer: 'GOT UP',
+        es: 'Pasado de GET UP es GOT UP.'
+      },
+      {
+        before: 'She',
+        after: 'a book last night.',
+        options: ['READ', 'SAW', 'SLEPT'],
+        answer: 'READ',
+        es: 'Pasado de READ es READ (se pronuncia "RED").'
+      },
+      {
+        before: 'We',
+        after: 'English for the test.',
+        options: ['STUDIED', 'DRANK', 'HAD'],
+        answer: 'STUDIED',
+        es: 'Pasado de STUDY es STUDIED.'
+      },
+      {
+        before: 'He',
+        after: 'a movie yesterday evening.',
+        options: ['SAW', 'GOT', 'DID'],
+        answer: 'SAW',
+        es: 'Pasado de SEE es SAW.'
+      },
+      {
+        before: 'They',
+        after: '8 hours last night.',
+        options: ['SLEPT', 'ATE', 'WENT'],
+        answer: 'SLEPT',
+        es: 'Pasado de SLEEP es SLEPT.'
+      }
+    ];
+
+    const DID_VS_PAST_ITEMS = [
+      {
+        type: 'Pregunta con DID',
+        prompt: 'Did you ___ to the mall yesterday?',
+        options: ['go (verbo base con DID)', 'went (pasado con DID)'],
+        answer: 'go (verbo base con DID)',
+        es: 'En preguntas con DID, el verbo principal va en forma base ("go"), porque DID ya marca el pasado.'
+      },
+      {
+        type: 'Respuesta afirmativa en pasado',
+        prompt: 'Yes, I did. I ___ to the mall yesterday.',
+        options: ['went (verbo en pasado)', 'go (verbo base)'],
+        answer: 'went (verbo en pasado)',
+        es: 'En la oración afirmativa ("I went..."), usamos el verbo en pasado: WENT.'
+      },
+      {
+        type: 'Pregunta con DID',
+        prompt: 'What did you ___ yesterday?',
+        options: ['do (verbo base con DID)', 'did (pasado con DID)'],
+        answer: 'do (verbo base con DID)',
+        es: 'Después de "What did you...", el verbo va en forma base: "do".'
+      },
+      {
+        type: 'Respuesta afirmativa en pasado',
+        prompt: 'I ___ my homework and studied.',
+        options: ['did (pasado de DO)', 'do (presente)'],
+        answer: 'did (pasado de DO)',
+        es: 'En la respuesta afirmativa usamos el pasado de DO: "did".'
+      }
+    ];
+
+    // MUNDO 4 & 5: Exactamente 6 Yes/No + 8 WH-Questions = 14 preguntas oficiales
+    const YES_NO_QUESTIONS = [
+      {
+        id: 'yn-1',
+        category: 'YES / NO',
+        question: 'Did you have breakfast this morning?',
+        modelYes: 'Yes, I did. I had breakfast at 7:30 a.m.',
+        modelNo: "No, I didn't. I only drank coffee this morning.",
+        esHint: 'Responde con "Yes, I did." o "No, I didn\'t." y agrega información extra en pasado (ej. hora o qué comiste/bebiste).'
+      },
+      {
+        id: 'yn-2',
+        category: 'YES / NO',
+        question: 'Did you study for the test?',
+        modelYes: 'Yes, I did. I studied English yesterday.',
+        modelNo: "No, I didn't. I studied Mathematics instead.",
+        esHint: 'Usa "Yes, I did." o "No, I didn\'t." seguido de una oración completa con verbo en pasado.'
+      },
+      {
+        id: 'yn-3',
+        category: 'YES / NO',
+        question: 'Did you go to the mall yesterday?',
+        modelYes: 'Yes, I did. I went to the mall in the afternoon.',
+        modelNo: "No, I didn't. I stayed home and studied.",
+        esHint: 'Recuerda: en la respuesta afirmativa extra usa pasado (ej. "I went...").'
+      },
+      {
+        id: 'yn-4',
+        category: 'YES / NO',
+        question: 'Did you have a good time last Saturday?',
+        modelYes: 'Yes, I did. I had a great time with my friends.',
+        modelNo: "No, I didn't. I worked and slept early.",
+        esHint: 'Empieza con "Yes, I did." o "No, I didn\'t." y añade un detalle de qué hiciste el sábado.'
+      },
+      {
+        id: 'yn-5',
+        category: 'YES / NO',
+        question: 'Did you sleep late?',
+        modelYes: 'Yes, I did. I slept until 10:00 a.m.',
+        modelNo: "No, I didn't. I got up at 6:00 a.m.",
+        esHint: 'Usa "Yes, I did." o "No, I didn\'t." y agrega a qué hora dormiste o te levantaste.'
+      },
+      {
+        id: 'yn-6',
+        category: 'YES / NO',
+        question: 'Did you eat fish and rice for lunch?',
+        modelYes: 'Yes, I did. I ate fish and rice at 1:00 p.m.',
+        modelNo: "No, I didn't. I had chicken and salad for lunch.",
+        esHint: 'Responde "Yes, I did." o "No, I didn\'t." y completa con información de tu almuerzo.'
+      }
+    ];
+
+    const WH_QUESTIONS = [
+      {
+        id: 'wh-1',
+        category: 'WH-QUESTION',
+        question: 'Where did you go yesterday?',
+        modelAnswer: 'I went to the mall.',
+        esHint: '"Where" pregunta por un lugar. Responde con una oración completa usando el pasado de GO: "I went to..."'
+      },
+      {
+        id: 'wh-2',
+        category: 'WH-QUESTION',
+        question: 'What did you study yesterday?',
+        modelAnswer: 'I studied Mathematics.',
+        esHint: '"What" pregunta qué estudiaste. Responde con oración completa en pasado: "I studied..."'
+      },
+      {
+        id: 'wh-3',
+        category: 'WH-QUESTION',
+        question: 'What time did you get up this morning?',
+        modelAnswer: 'I got up at 7:00 a.m.',
+        esHint: '"What time" pregunta la hora. Responde con oración completa y el pasado de GET UP: "I got up at..."'
+      },
+      {
+        id: 'wh-4',
+        category: 'WH-QUESTION',
+        question: 'What did you have for lunch?',
+        modelAnswer: 'I had rice and chicken for lunch.',
+        esHint: '"What" pregunta por tu almuerzo. Usa el pasado de HAVE ("I had...") en oración completa.'
+      },
+      {
+        id: 'wh-5',
+        category: 'WH-QUESTION',
+        question: 'What time did you get to Duoc?',
+        modelAnswer: 'I got to Duoc at 8:00 a.m.',
+        esHint: '"What time" pregunta a qué hora llegaste. Usa el pasado de GET ("I got to Duoc at...").'
+      },
+      {
+        id: 'wh-6',
+        category: 'WH-QUESTION',
+        question: 'What did you do yesterday?',
+        modelAnswer: 'I studied English and read a book.',
+        esHint: '"What did you do" pregunta qué hiciste. Responde en pasado con una acción concreta.'
+      },
+      {
+        id: 'wh-7',
+        category: 'WH-QUESTION',
+        question: 'Where did you study last week?',
+        modelAnswer: 'I studied at home and at the library.',
+        esHint: '"Where" pide un lugar. Responde con oración completa en pasado: "I studied at..."'
+      },
+      {
+        id: 'wh-8',
+        category: 'WH-QUESTION',
+        question: 'What movie did you see last night?',
+        modelAnswer: 'I saw an action movie last night.',
+        esHint: '"What movie" pregunta qué película viste. Usa el pasado de SEE ("I saw...") en oración completa.'
+      }
+    ];
+
+    const ALL_SPEAKING_QUESTIONS = [...YES_NO_QUESTIONS, ...WH_QUESTIONS];
+
+    // CHARACTER CHALLENGE: Estricto apego a los datos entregados (sin inventar acciones extra)
+    const CHARACTERS = [
+      {
+        id: 'thomas',
+        name: 'THOMAS',
+        role: 'Expedicionario de Rutinas y Deportes',
+        accent: 'text-sky-300',
+        border: 'border-sky-500/30',
+        yesterday: ['alarm at 7:00 a.m.', 'gym from 8:00 to 9:00 a.m.'],
+        routineLabel: 'On Mondays',
+        routineItems: ['rice and fish at 1:00 p.m.', 'video games from 4:00 to 6:00 p.m.'],
+        nowItems: ['book and museum']
+      },
+      {
+        id: 'jackson',
+        name: 'JACKSON',
+        role: 'Explorador de Jornada Intensa',
+        accent: 'text-teal-300',
+        border: 'border-teal-500/30',
+        yesterday: ['alarm at 5:00 a.m.', 'work from 8:00 a.m. to 9:00 p.m.'],
+        routineLabel: 'On Fridays',
+        routineItems: ['housework', 'swimming pool from 4:00 p.m. to 5:00 p.m.'],
+        nowItems: ['selfie and protein shake']
+      },
+      {
+        id: 'jenny_kim',
+        name: 'JENNY KIM',
+        role: 'Estudiante en Misión Académica',
+        accent: 'text-violet-300',
+        border: 'border-violet-500/30',
+        yesterday: ['alarm at 5:00 a.m.', 'breakfast at 7:00 a.m.'],
+        routineLabel: 'On Tuesdays',
+        routineItems: ['university from 8:00 a.m. to 5:00 p.m.', 'party at 8:00 p.m.'],
+        nowItems: ['English class and coffee']
+      }
+    ];
+
+    const CHARACTER_CHALLENGES = [
+      {
+        character: 'THOMAS',
+        timeframe: 'Yesterday',
+        prompt: 'Según la ficha de THOMAS en "Yesterday", ¿qué actividades corresponden?',
+        options: [
+          'alarm at 7:00 a.m.; gym from 8:00 to 9:00 a.m.',
+          'alarm at 5:00 a.m.; work from 8:00 a.m. to 9:00 p.m.',
+          'English class and coffee'
+        ],
+        answer: 'alarm at 7:00 a.m.; gym from 8:00 to 9:00 a.m.',
+        es: 'Thomas tuvo alarma a las 7:00 a.m. y gimnasio de 8:00 a 9:00 a.m. ayer.'
+      },
+      {
+        character: 'THOMAS',
+        timeframe: 'On Mondays',
+        prompt: '¿Qué hace THOMAS los lunes ("On Mondays")?',
+        options: [
+          'rice and fish at 1:00 p.m.; video games from 4:00 to 6:00 p.m.',
+          'housework; swimming pool from 4:00 p.m. to 5:00 p.m.',
+          'university from 8:00 a.m. to 5:00 p.m.; party at 8:00 p.m.'
+        ],
+        answer: 'rice and fish at 1:00 p.m.; video games from 4:00 to 6:00 p.m.',
+        es: 'Los lunes Thomas come arroz y pescado a la 1:00 p.m. y juega videojuegos de 4:00 a 6:00 p.m.'
+      },
+      {
+        character: 'THOMAS',
+        timeframe: 'Now',
+        prompt: '¿Qué corresponde a THOMAS en "Now"?',
+        options: [
+          'book and museum',
+          'selfie and protein shake',
+          'breakfast at 7:00 a.m.'
+        ],
+        answer: 'book and museum',
+        es: 'En "Now", Thomas está asociado a book and museum.'
+      },
+      {
+        character: 'JACKSON',
+        timeframe: 'Yesterday',
+        prompt: '¿Qué figura para JACKSON en "Yesterday"?',
+        options: [
+          'alarm at 5:00 a.m.; work from 8:00 a.m. to 9:00 p.m.',
+          'alarm at 7:00 a.m.; gym from 8:00 to 9:00 a.m.',
+          'English class and coffee'
+        ],
+        answer: 'alarm at 5:00 a.m.; work from 8:00 a.m. to 9:00 p.m.',
+        es: 'Ayer Jackson tuvo alarma a las 5:00 a.m. y trabajó de 8:00 a.m. a 9:00 p.m.'
+      },
+      {
+        character: 'JACKSON',
+        timeframe: 'On Fridays',
+        prompt: '¿Qué hace JACKSON los viernes ("On Fridays")?',
+        options: [
+          'housework; swimming pool from 4:00 p.m. to 5:00 p.m.',
+          'rice and fish at 1:00 p.m.; video games from 4:00 to 6:00 p.m.',
+          'book and museum'
+        ],
+        answer: 'housework; swimming pool from 4:00 p.m. to 5:00 p.m.',
+        es: 'Los viernes Jackson hace housework y va a la piscina (swimming pool) de 4:00 p.m. a 5:00 p.m.'
+      },
+      {
+        character: 'JACKSON',
+        timeframe: 'Now',
+        prompt: '¿Qué corresponde a JACKSON en "Now"?',
+        options: [
+          'selfie and protein shake',
+          'book and museum',
+          'party at 8:00 p.m.'
+        ],
+        answer: 'selfie and protein shake',
+        es: 'En "Now", Jackson tiene selfie and protein shake.'
+      },
+      {
+        character: 'JENNY KIM',
+        timeframe: 'Yesterday',
+        prompt: '¿Qué figura para JENNY KIM en "Yesterday"?',
+        options: [
+          'alarm at 5:00 a.m.; breakfast at 7:00 a.m.',
+          'alarm at 7:00 a.m.; gym from 8:00 to 9:00 a.m.',
+          'housework; swimming pool from 4:00 p.m. to 5:00 p.m.'
+        ],
+        answer: 'alarm at 5:00 a.m.; breakfast at 7:00 a.m.',
+        es: 'Ayer Jenny Kim tuvo alarma a las 5:00 a.m. y desayuno a las 7:00 a.m.'
+      },
+      {
+        character: 'JENNY KIM',
+        timeframe: 'On Tuesdays',
+        prompt: '¿Qué hace JENNY KIM los martes ("On Tuesdays")?',
+        options: [
+          'university from 8:00 a.m. to 5:00 p.m.; party at 8:00 p.m.',
+          'work from 8:00 a.m. to 9:00 p.m.',
+          'video games from 4:00 to 6:00 p.m.'
+        ],
+        answer: 'university from 8:00 a.m. to 5:00 p.m.; party at 8:00 p.m.',
+        es: 'Los martes Jenny Kim va a la universidad de 8:00 a.m. a 5:00 p.m. y tiene party a las 8:00 p.m.'
+      },
+      {
+        character: 'JENNY KIM',
+        timeframe: 'Now',
+        prompt: '¿Qué corresponde a JENNY KIM en "Now"?',
+        options: [
+          'English class and coffee',
+          'selfie and protein shake',
+          'book and museum'
+        ],
+        answer: 'English class and coffee',
+        es: 'En "Now", Jenny Kim está en English class and coffee.'
+      }
+    ];
+
+    // Las 5 insignias requeridas
+    const BADGES_CATALOG = [
+      {
+        id: 'vocab_master',
+        name: 'Vocabulary Master',
+        esDesc: 'Completa actividades en World 1 – Vocabulary Island y acumula práctica de verbos.',
+        icon: '🏝️'
+      },
+      {
+        id: 'grammar_explorer',
+        name: 'Grammar Explorer',
+        esDesc: 'Explora y practica tiempos verbales en World 2 – Time Travel o Character Challenge.',
+        icon: '⏳'
+      },
+      {
+        id: 'past_hero',
+        name: 'Past Simple Hero',
+        esDesc: 'Domina las formas en pasado y DID vs pasado en World 3 – Past Simple Castle.',
+        icon: '🏰'
+      },
+      {
+        id: 'speaking_star',
+        name: 'Speaking Star',
+        esDesc: 'Practica respuestas completas en World 4 – Speaking Arena.',
+        icon: '🎤'
+      },
+      {
+        id: 'exam_champion',
+        name: 'Oral Exam Champion',
+        esDesc: 'Completa una simulación de World 5 – Final Boss: Oral Exam.',
+        icon: '👑'
+      }
+    ];
+
+    // Metadatos de los 5 mundos + Character Challenge
+    const WORLDS_META = [
+      {
+        id: 'world1',
+        num: 'WORLD 1',
+        title: 'VOCABULARY ISLAND',
+        esSubtitle: '13 verbos esenciales A1 con imágenes, traducción y quiz de 10 preguntas.',
+        badgeAccent: 'from-sky-500 to-blue-600',
+        icon: '🏝️'
+      },
+      {
+        id: 'world2',
+        num: 'WORLD 2',
+        title: 'TIME TRAVEL',
+        esSubtitle: 'Yesterday (Past Simple), On Mondays (Present Simple) y Now (Present Continuous).',
+        badgeAccent: 'from-violet-500 to-indigo-600',
+        icon: '⏳'
+      },
+      {
+        id: 'world3',
+        num: 'WORLD 3',
+        title: 'PAST SIMPLE CASTLE',
+        esSubtitle: '12 transformaciones clave en pasado, memoria, READ (/red/) y DID vs pasado.',
+        badgeAccent: 'from-purple-500 to-fuchsia-600',
+        icon: '🏰'
+      },
+      {
+        id: 'world4',
+        num: 'WORLD 4',
+        title: 'SPEAKING ARENA',
+        esSubtitle: '6 Yes/No questions + 8 WH-questions, temporizador, respuestas modelo y modo aleatorio.',
+        badgeAccent: 'from-teal-500 to-emerald-600',
+        icon: '🎤'
+      },
+      {
+        id: 'world5',
+        num: 'WORLD 5',
+        title: 'FINAL BOSS: ORAL EXAM',
+        esSubtitle: 'Simulación individual alternando Yes/No y WH-questions con autoevaluación e informe.',
+        badgeAccent: 'from-amber-400 to-orange-600',
+        icon: '👑'
+      },
+      {
+        id: 'characters',
+        num: 'SPECIAL MISSION',
+        title: 'CHARACTER CHALLENGE',
+        esSubtitle: 'Desafíos con Thomas, Jackson y Jenny Kim en Yesterday, rutina y Now.',
+        badgeAccent: 'from-cyan-400 to-violet-500',
+        icon: '🧩'
+      }
+    ];
+
+    const QUEST_STEPS = [
+      { key: 'LEARN', label: '1. LEARN', es: 'Aprende las reglas y ejemplos clave' },
+      { key: 'PRACTICE', label: '2. PRACTICE', es: 'Practica de forma guiada' },
+      { key: 'REMEMBER', label: '3. REMEMBER', es: 'Refuerza la memoria y el vocabulario' },
+      { key: 'SPEAK', label: '4. SPEAK', es: 'Responde y expresa oraciones completas' },
+      { key: 'CHALLENGE', label: '5. CHALLENGE', es: 'Pon a prueba lo aprendido' }
+    ];
+
+    /* =========================================================================
+       3. ESTADO PERSISTENTE EN LOCALSTORAGE Y GESTOR DE RECOMPENSAS
+       ========================================================================= */
+    const STORAGE_KEY = 'speaking_quest_a1_state_v1';
+
+    function getDefaultState() {
+      return {
+        playerName: 'English Learner',
+        level: 'Beginner A1',
+        xp: 0,
+        stars: 0,
+        coins: 0,
+        completedActivities: {}, // clave: `${worldId}:${activityId}` -> true
+        badges: [],
+        examHistory: [],
+        activeView: 'home', // 'home' | 'map' | 'practice' | 'progress' | 'world'
+        activeWorldId: 'world1',
+        activeStep: 'LEARN'
+      };
+    }
+
+    let state = loadState();
+
+    // Estado efímero de UI / juegos activos (no rompe navegación)
+    const runtimeUI = {
+      questyMood: '¡Hola! Soy QUESTY, tu guía en SPEAKING QUEST. ¡Vamos paso a paso para preparar tu examen oral A1!',
+      flashcardIndex: 0,
+      flashcardRevealed: false,
+      pastFlashIndex: 0,
+      pastFlashRevealed: false,
+      matchSelectedEn: null,
+      matchSelectedEs: null,
+      matchMatchedIds: [],
+      pastMatchSelectedBase: null,
+      pastMatchSelectedPast: null,
+      pastMatchPairs: [],
+      memoryCards: [],
+      memoryFlipped: [],
+      memoryMatched: [],
+      quizQuestions: [],
+      quizIndex: 0,
+      quizScore: 0,
+      quizAnswered: false,
+      quizSelectedOption: null,
+      orderCurrent: [],
+      orderIndex: 0,
+      speakingIndex: 0,
+      speakingPool: [...ALL_SPEAKING_QUESTIONS],
+      speakingTimer: 10,
+      speakingTimerRunning: false,
+      speakingShowAnswer: false,
+      speakingRandomMode: false,
+      examQuestions: [],
+      examIndex: 0,
+      examPhase: 'intro', // 'intro' | 'question' | 'report'
+      examTimer: 10,
+      examTimerActive: false,
+      examSpeakingStarted: false,
+      examShowModel: false,
+      examLogs: []
+    };
+
+    let speakingIntervalId = null;
+    let examIntervalId = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...getDefaultState(),
+          ...parsed,
+          completedActivities: parsed.completedActivities && typeof parsed.completedActivities === 'object' ? parsed.completedActivities : {},
+          badges: Array.isArray(parsed.badges) ? parsed.badges : [],
+          examHistory: Array.isArray(parsed.examHistory) ? parsed.examHistory : []
+        };
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        // Si localStorage no está disponible, continuar en memoria
+      }
+    }
+
+    // Total de hitos/actividades para calcular el porcentaje de progreso (0% a 100%)
+    const TOTAL_MILESTONES = 16;
+
+    function computeProgressPercent() {
+      const doneCount = Object.keys(state.completedActivities).length;
+      const pct = Math.min(100, Math.round((doneCount / TOTAL_MILESTONES) * 100));
+      return pct;
+    }
+
+    function showToast(title, subtitle, accentClass = 'border-sky-400/50 text-sky-200') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto animate-fade-up rounded-2xl bg-[#0E1733]/95 border ${accentClass} px-4 py-3 shadow-xl backdrop-blur-md`;
+      el.innerHTML = `
+        <div class="font-display font-bold text-sm text-white">${escapeHtml(title)}</div>
+        <div class="text-xs text-slate-300 mt-0.5">${escapeHtml(subtitle)}</div>
+      `;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-6px)';
+        el.style.transition = 'all 0.25s ease';
+        setTimeout(() => el.remove(), 260);
+      }, 3200);
+    }
+
+    function checkAndUnlockBadges() {
+      const doneKeys = Object.keys(state.completedActivities);
+      const unlockedNow = [];
+
+      const rules = [
+        {
+          id: 'vocab_master',
+          cond: doneKeys.some(k => k.startsWith('world1:')) || state.xp >= 60
+        },
+        {
+          id: 'grammar_explorer',
+          cond: doneKeys.some(k => k.startsWith('world2:')) || doneKeys.some(k => k.startsWith('characters:'))
+        },
+        {
+          id: 'past_hero',
+          cond: doneKeys.some(k => k.startsWith('world3:'))
+        },
+        {
+          id: 'speaking_star',
+          cond: doneKeys.some(k => k.startsWith('world4:'))
+        },
+        {
+          id: 'exam_champion',
+          cond: doneKeys.some(k => k.startsWith('world5:')) || state.examHistory.length > 0
+        }
+      ];
+
+      rules.forEach(rule => {
+        if (rule.cond && !state.badges.includes(rule.id)) {
+          state.badges.push(rule.id);
+          const meta = BADGES_CATALOG.find(b => b.id === rule.id);
+          if (meta) unlockedNow.push(meta);
+        }
+      });
+
+      if (unlockedNow.length > 0) {
+        SoundFX.fanfare();
+        unlockedNow.forEach(b => {
+          showToast(
+            `🏅 ¡Nueva insignia: ${b.name}!`,
+            `${b.esDesc} — Great job!`,
+            'border-amber-400/60 text-amber-200'
+          );
+        });
+      }
+    }
+
+    function awardReward({ xp = 0, stars = 0, coins = 0, activityKey = null, reasonEs = '' }) {
+      state.xp += xp;
+      state.stars += stars;
+      state.coins += coins;
+
+      let firstTimeBonus = false;
+      if (activityKey && !state.completedActivities[activityKey]) {
+        state.completedActivities[activityKey] = true;
+        state.stars += 1;
+        state.coins += 10;
+        firstTimeBonus = true;
+      }
+
+      checkAndUnlockBadges();
+      saveState();
+      updateTopHUD();
+
+      if (reasonEs) {
+        const extra = firstTimeBonus ? ' +1 ★ de misión completada!' : '';
+        showToast(
+          `+${xp} XP · +${stars + (firstTimeBonus ? 1 : 0)} ★`,
+          `${reasonEs}${extra}`,
+          'border-teal-400/50 text-teal-200'
+        );
+      }
+    }
+
+    function updateTopHUD() {
+      const xpEl = document.getElementById('hud-top-xp');
+      const starsEl = document.getElementById('hud-top-stars');
+      const coinsEl = document.getElementById('hud-top-coins');
+      if (xpEl) xpEl.textContent = `${state.xp} XP`;
+      if (starsEl) starsEl.textContent = `${state.stars} ★`;
+      if (coinsEl) coinsEl.textContent = `${state.coins} 🪙`;
+
+      const pct = computeProgressPercent();
+      const homeXp = document.getElementById('hud-home-xp');
+      const homeStars = document.getElementById('hud-home-stars');
+      const homeProgress = document.getElementById('hud-home-progress');
+      const homeBar = document.getElementById('hud-home-bar');
+      if (homeXp) homeXp.textContent = String(state.xp);
+      if (homeStars) homeStars.textContent = String(state.stars);
+      if (homeProgress) homeProgress.textContent = `${pct}%`;
+      if (homeBar) homeBar.style.width = `${pct}%`;
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    /* =========================================================================
+       4. PERSONAJE GUÍA QUESTY (SVG ILUSTRADO)
+       ========================================================================= */
+    function renderQuesty(messageEs, moodTag = 'QUESTY · A1 GUIDE') {
+      return `
+        <div class="rpg-panel rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 shadow-glow-blue">
+          <div class="animate-float shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/25 via-violet-500/25 to-teal-400/25 border border-sky-400/40 flex items-center justify-center">
+            <!-- Ilustración SVG de QUESTY -->
+            <svg class="w-16 h-16" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="44" r="22" fill="#13224A" stroke="#38BDF8" stroke-width="2.6"/>
+              <!-- Antena / cristal guía -->
+              <line x1="40" y1="22" x2="40" y2="11" stroke="#FACC15" stroke-width="2.6" stroke-linecap="round"/>
+              <circle cx="40" cy="9" r="4.5" fill="#FACC15"/>
+              <!-- Ojos expresivos -->
+              <circle cx="32" cy="42" r="4" fill="#38BDF8"/>
+              <circle cx="48" cy="42" r="4" fill="#38BDF8"/>
+              <circle cx="33.2" cy="40.8" r="1.4" fill="#FFFFFF"/>
+              <circle cx="49.2" cy="40.8" r="1.4" fill="#FFFFFF"/>
+              <!-- Sonrisa amistosa -->
+              <path d="M33 51C35.5 55.2 44.5 55.2 47 51" stroke="#2DD4BF" stroke-width="2.6" stroke-linecap="round"/>
+              <!-- Bufanda / insignia RPG -->
+              <path d="M24 62L40 68L56 62" stroke="#A855F7" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="flex-1 text-center sm:text-left">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-sky-500/15 text-sky-300 border border-sky-400/30 mb-1.5">
+              <span>✦</span>
+              <span>${escapeHtml(moodTag)}</span>
+            </div>
+            <p class="text-sm sm:text-base text-slate-100 leading-relaxed font-medium">
+              ${escapeHtml(messageEs)}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    /* =========================================================================
+       5. NAVEGACIÓN ENTRE VISTAS (HOME, MAP, PRACTICE, PROGRESS, WORLD)
+       ========================================================================= */
+    function clearTimers() {
+      if (speakingIntervalId) {
+        clearInterval(speakingIntervalId);
+        speakingIntervalId = null;
+      }
+      if (examIntervalId) {
+        clearInterval(examIntervalId);
+        examIntervalId = null;
+      }
+      runtimeUI.speakingTimerRunning = false;
+      runtimeUI.examTimerActive = false;
+    }
+
+    function navigateTo(view, worldId = null, stepKey = null) {
+      SoundFX.click();
+      clearTimers();
+      state.activeView = view;
+      if (worldId) {
+        state.activeWorldId = worldId;
+        initWorldState(worldId);
+      }
+      if (stepKey) {
+        state.activeStep = stepKey;
+      }
+      saveState();
+      syncNavHighlights();
+      renderView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function initWorldState(worldId) {
+      if (worldId === 'world1') {
+        runtimeUI.flashcardIndex = 0;
+        runtimeUI.flashcardRevealed = false;
+        runtimeUI.matchSelectedEn = null;
+        runtimeUI.matchSelectedEs = null;
+        runtimeUI.matchMatchedIds = [];
+        runtimeUI.quizQuestions = buildVocabQuiz10();
+        runtimeUI.quizIndex = 0;
+        runtimeUI.quizScore = 0;
+        runtimeUI.quizAnswered = false;
+        runtimeUI.quizSelectedOption = null;
+      } else if (worldId === 'world2') {
+        runtimeUI.orderIndex = 0;
+        runtimeUI.orderCurrent = [];
+      } else if (worldId === 'world3') {
+        runtimeUI.pastFlashIndex = 0;
+        runtimeUI.pastFlashRevealed = false;
+        runtimeUI.pastMatchSelectedBase = null;
+        runtimeUI.pastMatchSelectedPast = null;
+        runtimeUI.pastMatchPairs = [];
+        setupMemoryGame();
+      } else if (worldId === 'world4') {
+        runtimeUI.speakingIndex = 0;
+        runtimeUI.speakingShowAnswer = false;
+        runtimeUI.speakingTimer = 10;
+        runtimeUI.speakingPool = runtimeUI.speakingRandomMode
+          ? shuffleArray(ALL_SPEAKING_QUESTIONS)
+          : ALL_SPEAKING_QUESTIONS;
+      } else if (worldId === 'world5') {
+        runtimeUI.examPhase = 'intro';
+        runtimeUI.examIndex = 0;
+        runtimeUI.examLogs = [];
+        runtimeUI.examSpeakingStarted = false;
+        runtimeUI.examShowModel = false;
+        runtimeUI.examTimer = 10;
+      }
+    }
+
+    function syncNavHighlights() {
+      const current = state.activeView === 'world' ? 'map' : state.activeView;
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        const active = btn.getAttribute('data-nav') === current;
+        btn.className = active
+          ? 'nav-pill px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-sm'
+          : 'nav-pill px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800/70';
+      });
+      document.querySelectorAll('.nav-pill-mobile').forEach(btn => {
+        const active = btn.getAttribute('data-nav') === current;
+        btn.className = active
+          ? 'nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-bold transition bg-blue-500/20 text-sky-300 border border-sky-400/30'
+          : 'nav-pill-mobile flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-semibold transition text-slate-400 hover:text-slate-200';
+      });
+    }
+
+    function renderView() {
+      const main = document.getElementById('main-content');
+      if (!main) return;
+      updateTopHUD();
+
+      if (state.activeView === 'home') {
+        main.innerHTML = renderHomeScreen();
+        bindHomeEvents();
+      } else if (state.activeView === 'map') {
+        main.innerHTML = renderMapScreen();
+        bindMapEvents();
+      } else if (state.activeView === 'practice') {
+        main.innerHTML = renderPracticeScreen();
+        bindPracticeEvents();
+      } else if (state.activeView === 'progress') {
+        main.innerHTML = renderProgressScreen();
+        bindProgressEvents();
+      } else if (state.activeView === 'world') {
+        main.innerHTML = renderWorldScreen(state.activeWorldId, state.activeStep);
+        bindWorldEvents(state.activeWorldId, state.activeStep);
+      }
+    }
+
+    /* =========================================================================
+       6. PANTALLA DE INICIO (HOME) & MAPA DE MUNDOS (MAP)
+       ========================================================================= */
+    function renderHomeScreen() {
+      const pct = computeProgressPercent();
+      return `
+        <section class="space-y-7 animate-fade-up">
+          <!-- Hero principal RPG -->
+          <div class="rpg-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-sky-400/25">
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              <div class="lg:col-span-7 space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/15 border border-violet-400/30 text-violet-200 text-xs font-bold tracking-wide">
+                  <span>⚔️</span>
+                  <span>ORAL EXAM PREP · BEGINNER A1</span>
+                </div>
+                <h1 class="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                  SPEAKING QUEST
+                  <span class="block text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-violet-400 to-teal-300 text-xl sm:text-3xl mt-1">
+                    – The English Speaking Adventure
+                  </span>
+                </h1>
+                <p class="text-base sm:text-lg font-semibold text-amber-300">
+                  Train your English. Complete missions. Become a speaking champion!
+                </p>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+                  Prepárate para tu evaluación oral de inglés nivel principiante A1 con misiones interactivas. Aprenderás verbos clave, tiempos verbales, pasado simple, respuestas completas con <span class="text-sky-300 font-semibold">Yes, I did / No, I didn't</span> y preguntas <span class="text-teal-300 font-semibold">WH-questions</span> hasta llegar al examen oral final.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    id="start-adventure-btn"
+                    type="button"
+                    class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 via-violet-500 to-teal-400 hover:brightness-110 active:scale-[0.99] text-white font-display font-bold text-sm sm:text-base shadow-glow-blue transition flex items-center gap-2"
+                  >
+                    <span>▶</span>
+                    <span>START ADVENTURE</span>
+                  </button>
+                  <button
+                    id="home-go-practice-btn"
+                    type="button"
+                    class="px-5 py-3.5 rounded-2xl bg-[#131D3E] hover:bg-[#1B2954] border border-sky-400/30 text-sky-200 font-semibold text-sm transition"
+                  >
+                    Práctica rápida
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tarjeta HUD del jugador -->
+              <div class="lg:col-span-5">
+                <div class="rounded-2xl bg-[#090F22]/90 border border-slate-700/80 p-5 space-y-4 shadow-lg">
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                      <div class="text-[11px] uppercase tracking-wider text-slate-400">Player</div>
+                      <div class="font-display font-bold text-lg text-white">${escapeHtml(state.playerName)}</div>
+                    </div>
+                    <span class="px-3 py-1 rounded-xl bg-blue-500/15 border border-blue-400/30 text-sky-300 text-xs font-bold">
+                      Level: ${escapeHtml(state.level)}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="rounded-xl bg-[#111B38] border border-slate-800 p-3">
+                      <div class="text-[11px] text-slate-400 uppercase">XP</div>
+                      <div id="hud-home-xp" class="font-display font-extrabold text-xl text-sky-400 mt-0.5">${state.xp}</div>
+                    </div>
+                    <div class="rounded-xl bg-[#111B38] border border-slate-800 p-3">
+                      <div class="text-[11px] text-slate-400 uppercase">Stars</div>
+                      <div id="hud-home-stars" class="font-display font-extrabold text-xl text-amber-300 mt-0.5">${state.stars}</div>
+                    </div>
+                    <div class="rounded-xl bg-[#111B38] border border-slate-800 p-3">
+                      <div class="text-[11px] text-slate-400 uppercase">Progress</div>
+                      <div id="hud-home-progress" class="font-display font-extrabold text-xl text-teal-300 mt-0.5">${pct}%</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                      <span>Avance de misiones A1</span>
+                      <span class="text-teal-300 font-semibold">${pct}%</span>
+                    </div>
+                    <div class="w-full h-3 rounded-full bg-slate-800 overflow-hidden p-0.5">
+                      <div
+                        id="hud-home-bar"
+                        class="h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-teal-400 transition-all duration-500"
+                        style="width: ${pct}%"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Guía QUESTY -->
+          ${renderQuesty(runtimeUI.questyMood, 'QUESTY · TU GUÍA DE AVENTURA')}
+
+          <!-- Selector rápido de los 5 Mundos + Character Challenge -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="font-display font-bold text-xl text-white">Mapa de Mundos y Desafíos</h2>
+              <span class="text-xs text-slate-400">Todos los mundos están abiertos para practicar cuando quieras</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${WORLDS_META.map(w => renderWorldCard(w)).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderWorldCard(w) {
+      const doneCount = Object.keys(state.completedActivities).filter(k => k.startsWith(`${w.id}:`)).length;
+      return `
+        <button
+          type="button"
+          data-open-world="${w.id}"
+          class="rpg-card-interactive rounded-2xl p-5 text-left flex flex-col justify-between gap-4 group focus:outline-none"
+        >
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-gradient-to-r ${w.badgeAccent} text-white">
+                <span>${w.icon}</span>
+                <span>${escapeHtml(w.num)}</span>
+              </span>
+              <span class="text-xs font-semibold text-amber-300">${doneCount} misiones ✓</span>
+            </div>
+            <h3 class="font-display font-bold text-lg text-white group-hover:text-sky-300 transition">
+              ${escapeHtml(w.title)}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              ${escapeHtml(w.esSubtitle)}
+            </p>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs font-bold text-sky-300">
+            <span>LEARN → PRACTICE → REMEMBER → SPEAK → CHALLENGE</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </div>
+        </button>
+      `;
+    }
+
+    function bindHomeEvents() {
+      const startBtn = document.getElementById('start-adventure-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => navigateTo('world', 'world1', 'LEARN'));
+      }
+      const pracBtn = document.getElementById('home-go-practice-btn');
+      if (pracBtn) {
+        pracBtn.addEventListener('click', () => navigateTo('practice'));
+      }
+      document.querySelectorAll('[data-open-world]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const wId = btn.getAttribute('data-open-world');
+          navigateTo('world', wId, 'LEARN');
+        });
+      });
+    }
+
+    function renderMapScreen() {
+      const pct = computeProgressPercent();
+      return `
+        <section class="space-y-6 animate-fade-up">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-white">🗺️ Adventure World Map</h1>
+              <p class="text-sm text-slate-300 mt-1">Selecciona cualquier mundo para entrenar paso a paso sin bloqueos.</p>
+            </div>
+            <div class="px-4 py-2 rounded-2xl bg-[#0D142B] border border-slate-800 text-xs font-bold text-teal-300">
+              Progreso general: ${pct}% · ${state.xp} XP · ${state.stars} ★
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${WORLDS_META.map(w => renderWorldCard(w)).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function bindMapEvents() {
+      document.querySelectorAll('[data-open-world]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigateTo('world', btn.getAttribute('data-open-world'), 'LEARN');
+        });
+      });
+    }
+
+    /* =========================================================================
+       7. PANTALLA DE PRÁCTICA RÁPIDA (PRACTICE) & PROGRESO (PROGRESS)
+       ========================================================================= */
+    function renderPracticeScreen() {
+      return `
+        <section class="space-y-6 animate-fade-up">
+          <div>
+            <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-white">⚡ Quick Practice Hub</h1>
+            <p class="text-sm text-slate-300 mt-1">Entrena directamente las habilidades clave para tu evaluación oral A1.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-sky-300 uppercase">World 1 · 13 Verbos</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">Flashcards y Quiz de 10 Preguntas</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Repasa EAT, DRINK, HAVE, DO, READ, STUDY, GET UP, RUN, GO, PLAY, WORK, SWIM y TAKE.</p>
+              </div>
+              <button data-quick="world1:REMEMBER" class="w-full py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs transition">
+                Ir a Verbos y Quiz →
+              </button>
+            </div>
+
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-violet-300 uppercase">World 2 · Tiempos</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">Yesterday · On Mondays · Now</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Clasifica oraciones, ordena palabras y detecta errores entre Past, Present Simple y Present Continuous.</p>
+              </div>
+              <button data-quick="world2:PRACTICE" class="w-full py-2.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-xs transition">
+                Ir a Time Travel →
+              </button>
+            </div>
+
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-fuchsia-300 uppercase">World 3 · 12 Pasados</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">Memoria de Pasado y DID vs Pasado</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Entrena las 12 formas en pasado (incluyendo READ /red/) y cuándo usar verbo base con DID.</p>
+              </div>
+              <button data-quick="world3:REMEMBER" class="w-full py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs transition">
+                Ir a Past Simple Castle →
+              </button>
+            </div>
+
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-teal-300 uppercase">World 4 · Speaking Arena</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">6 Yes/No + 8 WH-Questions</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Practica respuestas completas con temporizador, modelos y modo aleatorio.</p>
+              </div>
+              <button data-quick="world4:SPEAK" class="w-full py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs transition">
+                Practicar Preguntas Orales →
+              </button>
+            </div>
+
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-cyan-300 uppercase">Special · Personajes</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">Character Challenge</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Interpreta las fichas exactas de Thomas, Jackson y Jenny Kim en pasado, rutina y ahora.</p>
+              </div>
+              <button data-quick="characters:CHALLENGE" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs transition">
+                Jugar Character Challenge →
+              </button>
+            </div>
+
+            <div class="rpg-panel rounded-2xl p-5 flex flex-col justify-between gap-4 border border-amber-400/35">
+              <div>
+                <span class="text-xs font-bold text-amber-300 uppercase">World 5 · Simulación</span>
+                <h2 class="font-display font-bold text-lg text-white mt-1">Final Boss: Oral Exam</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1.5">Preguntas alternadas sin pistas iniciales, 10s para pensar, autoevaluación e informe final.</p>
+              </div>
+              <button data-quick="world5:CHALLENGE" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:brightness-110 text-slate-950 font-extrabold text-xs transition">
+                Iniciar Simulación Final →
+              </button>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function bindPracticeEvents() {
+      document.querySelectorAll('[data-quick]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const [wId, step] = btn.getAttribute('data-quick').split(':');
+          navigateTo('world', wId, step);
+        });
+      });
+    }
+
+    function renderProgressScreen() {
+      const pct = computeProgressPercent();
+      return `
+        <section class="space-y-6 animate-fade-up">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-white">🏆 Player Progress & Badges</h1>
+              <p class="text-sm text-slate-300 mt-1">Tu avance se guarda automáticamente en este navegador.</p>
+            </div>
+            <button
+              id="reset-progress-btn"
+              type="button"
+              class="px-4 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-400/40 text-rose-200 text-xs font-bold transition self-start sm:self-auto"
+            >
+              Reiniciar progreso
+            </button>
+          </div>
+
+          <!-- Confirmación inline sin alert/confirm -->
+          <div id="reset-confirm-box" class="hidden rounded-2xl bg-rose-950/50 border border-rose-400/40 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <p class="text-xs sm:text-sm text-rose-100">¿Seguro que deseas borrar tu XP, estrellas, insignias y misiones completadas?</p>
+            <div class="flex items-center gap-2">
+              <button id="confirm-reset-yes" type="button" class="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold">Sí, reiniciar</button>
+              <button id="confirm-reset-no" type="button" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Resumen numérico -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="rpg-panel rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Experiencia</div>
+              <div class="font-display font-extrabold text-2xl text-sky-400 mt-1">${state.xp} XP</div>
+            </div>
+            <div class="rpg-panel rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Estrellas</div>
+              <div class="font-display font-extrabold text-2xl text-amber-300 mt-1">${state.stars} ★</div>
+            </div>
+            <div class="rpg-panel rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Monedas</div>
+              <div class="font-display font-extrabold text-2xl text-teal-300 mt-1">${state.coins} 🪙</div>
+            </div>
+            <div class="rpg-panel rounded-2xl p-4">
+              <div class="text-xs text-slate-400">Progreso Total</div>
+              <div class="font-display font-extrabold text-2xl text-violet-300 mt-1">${pct}%</div>
+            </div>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div class="rpg-panel rounded-2xl p-5 space-y-2">
+            <div class="flex justify-between text-xs font-semibold text-slate-300">
+              <span>Nivel: ${escapeHtml(state.level)} (${escapeHtml(state.playerName)})</span>
+              <span>${Object.keys(state.completedActivities).length} / ${TOTAL_MILESTONES} hitos registrados</span>
+            </div>
+            <div class="w-full h-3.5 rounded-full bg-slate-800 overflow-hidden p-0.5">
+              <div class="h-full rounded-full bg-gradient-to-r from-blue-500 via-violet-500 to-teal-400 transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+
+          <!-- Las 5 Insignias -->
+          <div class="space-y-3">
+            <h2 class="font-display font-bold text-xl text-white">Insignias de la Aventura (5)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${BADGES_CATALOG.map(b => {
+                const unlocked = state.badges.includes(b.id);
+                return `
+                  <div class="rounded-2xl p-4 border ${unlocked ? 'bg-[#121E42] border-amber-400/45 shadow-glow-gold' : 'bg-[#0B1124]/80 border-slate-800 opacity-75'} flex items-start gap-3.5">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 ${unlocked ? 'bg-amber-400/15 border border-amber-300/30' : 'bg-slate-800/80'}">
+                      ${b.icon}
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <h3 class="font-display font-bold text-sm text-white">${escapeHtml(b.name)}</h3>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${unlocked ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}">
+                          ${unlocked ? 'DESBLOQUEADA' : 'PENDIENTE'}
+                        </span>
+                      </div>
+                      <p class="text-xs text-slate-300 mt-1 leading-relaxed">${escapeHtml(b.esDesc)}</p>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Historial reciente de exámenes orales -->
+          ${state.examHistory.length > 0 ? `
+            <div class="rpg-panel rounded-2xl p-5 space-y-3">
+              <h2 class="font-display font-bold text-lg text-white">Simulaciones de Examen Oral Realizadas</h2>
+              <div class="space-y-2">
+                ${state.examHistory.slice(-5).reverse().map(item => `
+                  <div class="rounded-xl bg-[#090F22] border border-slate-800 p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span class="text-slate-300 font-semibold">${escapeHtml(item.dateLabel)}</span>
+                    <span class="text-sky-300 font-bold">Puntaje: ${escapeHtml(item.scoreLabel)}</span>
+                    <span class="text-teal-300">Oraciones completas: ${escapeHtml(item.fullSentenceCount)}/${escapeHtml(item.total)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </section>
+      `;
+    }
+
+    function bindProgressEvents() {
+      const resetBtn = document.getElementById('reset-progress-btn');
+      const box = document.getElementById('reset-confirm-box');
+      const yesBtn = document.getElementById('confirm-reset-yes');
+      const noBtn = document.getElementById('confirm-reset-no');
+
+      if (resetBtn && box) {
+        resetBtn.addEventListener('click', () => {
+          SoundFX.click();
+          box.classList.toggle('hidden');
+        });
+      }
+      if (noBtn && box) {
+        noBtn.addEventListener('click', () => {
+          SoundFX.click();
+          box.classList.add('hidden');
+        });
+      }
+      if (yesBtn) {
+        yesBtn.addEventListener('click', () => {
+          SoundFX.click();
+          state = getDefaultState();
+          saveState();
+          initWorldState('world1');
+          renderView();
+          showToast('Progreso reiniciado', 'Comenzaste de nuevo en 0 XP y 0 ★.', 'border-sky-400/50 text-sky-200');
+        });
+      }
+    }
+
+    /* =========================================================================
+       8. ESTRUCTURA DE MUNDOS: LEARN -> PRACTICE -> REMEMBER -> SPEAK -> CHALLENGE
+       ========================================================================= */
+    function renderWorldScreen(worldId, stepKey) {
+      const world = WORLDS_META.find(w => w.id === worldId) || WORLDS_META[0];
+      const currentStepObj = QUEST_STEPS.find(s => s.key === stepKey) || QUEST_STEPS[0];
+
+      return `
+        <section class="space-y-6 animate-fade-up">
+          <!-- Cabecera del mundo y botón volver -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <button
+              id="back-to-map-btn"
+              type="button"
+              class="px-3.5 py-2 rounded-xl bg-[#0D142B] hover:bg-[#172347] border border-slate-800 text-xs font-bold text-slate-200 flex items-center gap-1.5 transition"
+            >
+              <span>←</span>
+              <span>Volver al Mapa</span>
+            </button>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${world.badgeAccent} text-white">
+              ${world.icon} ${escapeHtml(world.num)} · ${escapeHtml(world.title)}
+            </span>
+          </div>
+
+          <!-- Barra de secuencia obligatoria de 5 pasos -->
+          <div class="rpg-panel rounded-2xl p-3 sm:p-4 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 px-1">
+              <span>Secuencia de misión: <strong class="text-sky-300">${escapeHtml(currentStepObj.es)}</strong></span>
+              <span class="text-teal-300 font-semibold">Puedes avanzar o repetir cualquier paso</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              ${QUEST_STEPS.map(st => {
+                const isActive = st.key === stepKey;
+                return `
+                  <button
+                    type="button"
+                    data-step-tab="${st.key}"
+                    class="py-2.5 px-3 rounded-xl text-xs font-display font-bold transition text-center ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-glow-blue'
+                        : 'bg-[#090F22] hover:bg-[#142044] text-slate-300 border border-slate-800'
+                    }"
+                  >
+                    ${escapeHtml(st.label)}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Contenido específico del mundo y paso -->
+          <div id="world-step-container" class="space-y-6">
+            ${renderStepContent(worldId, stepKey)}
+          </div>
+        </section>
+      `;
+    }
+
+    function bindWorldEvents(worldId, stepKey) {
+      const backBtn = document.getElementById('back-to-map-btn');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => navigateTo('map'));
+      }
+
+      document.querySelectorAll('[data-step-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const nextStep = btn.getAttribute('data-step-tab');
+          navigateTo('world', worldId, nextStep);
+        });
+      });
+
+      bindStepInteractiveEvents(worldId, stepKey);
+    }
+
+    function renderStepContent(worldId, stepKey) {
+      if (worldId === 'world1') return renderWorld1Step(stepKey);
+      if (worldId === 'world2') return renderWorld2Step(stepKey);
+      if (worldId === 'world3') return renderWorld3Step(stepKey);
+      if (worldId === 'world4') return renderWorld4Step(stepKey);
+      if (worldId === 'world5') return renderWorld5Step(stepKey);
+      if (worldId === 'characters') return renderCharactersStep(stepKey);
+      return '';
+    }
+
+    function bindStepInteractiveEvents(worldId, stepKey) {
+      if (worldId === 'world1') bindWorld1Events(stepKey);
+      else if (worldId === 'world2') bindWorld2Events(stepKey);
+      else if (worldId === 'world3') bindWorld3Events(stepKey);
+      else if (worldId === 'world4') bindWorld4Events(stepKey);
+      else if (worldId === 'world5') bindWorld5Events(stepKey);
+      else if (worldId === 'characters') bindCharactersEvents(stepKey);
+    }
+
+    /* =========================================================================
+       9. WORLD 1 – VOCABULARY ISLAND (13 VERBOS ESTRICTOS + 5 ACTIVIDADES)
+       ========================================================================= */
+    function renderWorld1Step(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 class="font-display text-xl sm:text-2xl font-bold text-white">🏝️ World 1 – Vocabulary Island (13 Verbos)</h2>
+                <p class="text-sm text-slate-300 mt-1">
+                  Conoce los <strong>13 verbos</strong> esenciales de esta isla con su traducción en español, ejemplo sencillo y dibujo guía.
+                </p>
+              </div>
+              <button data-next-step="PRACTICE" class="px-4 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold shrink-0">
+                Pasar a 2. PRACTICE →
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+              ${VOCAB_VERBS.map(v => `
+                <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4 flex items-start gap-3.5">
+                  <div class="shrink-0 w-16 h-16 rounded-xl bg-[#111B38] border border-sky-400/20 flex items-center justify-center">
+                    ${renderVerbSVG(v.id, 'w-12 h-12')}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-baseline justify-between gap-2">
+                      <span class="font-display font-extrabold text-base text-sky-300">${escapeHtml(v.verb)}</span>
+                      <span class="text-xs font-bold text-amber-300">${escapeHtml(v.es)}</span>
+                    </div>
+                    <p class="text-xs text-slate-200 mt-1 font-medium">"${escapeHtml(v.example)}"</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Pista: ${escapeHtml(v.hint)}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'PRACTICE') {
+        // Actividad 2: Match English to Spanish + Actividad 3: Choose the correct verb according to the image
+        const imgTarget = VOCAB_VERBS[6]; // GET UP como base o rotación
+        const imgOptions = shuffleArray([VOCAB_VERBS[6], VOCAB_VERBS[0], VOCAB_VERBS[4], VOCAB_VERBS[9]]);
+        return `
+          <div class="space-y-6">
+            <!-- Actividad 2: Match English to Spanish -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-300">Actividad 2 · Emparejamiento</span>
+                  <h3 class="font-display text-lg sm:text-xl font-bold text-white">Match English to Spanish (6 pares)</h3>
+                  <p class="text-xs sm:text-sm text-slate-300">Selecciona un verbo en inglés y luego su traducción en español.</p>
+                </div>
+                <button id="w1-match-reset" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200">
+                  Mezclar pares
+                </button>
+              </div>
+              <div id="w1-match-board" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+              <div id="w1-match-feedback" class="text-xs sm:text-sm font-semibold min-h-[1.5rem]"></div>
+            </div>
+
+            <!-- Actividad 3: Choose the correct verb according to the image -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div>
+                <span class="text-xs font-bold uppercase text-teal-300">Actividad 3 · Imagen a Verbo</span>
+                <h3 class="font-display text-lg sm:text-xl font-bold text-white">Choose the correct verb according to the image</h3>
+                <p class="text-xs sm:text-sm text-slate-300">Observa el dibujo y elige el verbo correcto en inglés.</p>
+              </div>
+              <div class="flex flex-col sm:flex-row items-center gap-5 bg-[#090F22] rounded-2xl p-4 border border-slate-800">
+                <div class="w-24 h-24 rounded-2xl bg-[#131D3E] border border-teal-400/30 flex items-center justify-center shrink-0">
+                  ${renderVerbSVG(imgTarget.id, 'w-16 h-16')}
+                </div>
+                <div class="flex-1 w-full space-y-3">
+                  <p class="text-xs text-slate-400">Ejemplo relacionado: <span class="text-slate-200 italic">"${escapeHtml(imgTarget.example)}"</span></p>
+                  <div class="grid grid-cols-2 gap-2.5">
+                    ${imgOptions.map(opt => `
+                      <button
+                        type="button"
+                        data-w1-img-choice="${opt.verb}"
+                        data-w1-img-correct="${imgTarget.verb}"
+                        class="py-2.5 px-3 rounded-xl bg-[#131D3E] hover:bg-blue-500/25 border border-slate-700 hover:border-sky-400 text-sm font-display font-bold text-white transition"
+                      >
+                        ${escapeHtml(opt.verb)}
+                      </button>
+                    `).join('')}
+                  </div>
+                  <div id="w1-img-feedback" class="text-xs sm:text-sm font-semibold"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'REMEMBER') {
+        // Actividad 1: Flashcards interactivas con botón para revelar traducción
+        const card = VOCAB_VERBS[runtimeUI.flashcardIndex % VOCAB_VERBS.length];
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold uppercase text-amber-300">Actividad 1 · Flashcards Interactivas</span>
+                <h2 class="font-display text-xl font-bold text-white">
+                  Tarjeta ${(runtimeUI.flashcardIndex % VOCAB_VERBS.length) + 1} de ${VOCAB_VERBS.length}
+                </h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="w1-fc-prev" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">← Anterior</button>
+                <button id="w1-fc-next" type="button" class="px-3.5 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold">Siguiente →</button>
+              </div>
+            </div>
+
+            <div class="max-w-xl mx-auto rounded-3xl bg-[#090F22] border border-sky-400/30 p-6 text-center space-y-4 shadow-glow-blue">
+              <div class="w-24 h-24 mx-auto rounded-2xl bg-[#131D3E] border border-slate-700 flex items-center justify-center">
+                ${renderVerbSVG(card.id, 'w-16 h-16')}
+              </div>
+              <div class="font-display text-3xl font-extrabold text-sky-300 tracking-wide">${escapeHtml(card.verb)}</div>
+              <p class="text-sm text-slate-200 italic">"${escapeHtml(card.example)}"</p>
+
+              <button
+                id="w1-fc-reveal-btn"
+                type="button"
+                class="px-5 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-xs transition"
+              >
+                ${runtimeUI.flashcardRevealed ? 'Ocultar traducción' : 'Revelar traducción en español'}
+              </button>
+
+              ${runtimeUI.flashcardRevealed ? `
+                <div class="rounded-2xl bg-teal-500/10 border border-teal-400/35 p-4 animate-fade-up">
+                  <div class="text-lg font-bold text-teal-300">Traducción: ${escapeHtml(card.es)}</div>
+                  <p class="text-xs text-slate-300 mt-1">Pista A1: ${escapeHtml(card.hint)}.</p>
+                </div>
+              ` : `
+                <div class="text-xs text-slate-400">Intenta decir su significado en español antes de revelar.</div>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'SPEAK') {
+        // Actividad 4: Traducción español a inglés
+        const target = VOCAB_VERBS[(runtimeUI.flashcardIndex + 2) % VOCAB_VERBS.length];
+        const options = shuffleArray([
+          target,
+          ...shuffleArray(VOCAB_VERBS.filter(v => v.id !== target.id)).slice(0, 3)
+        ]);
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div>
+              <span class="text-xs font-bold uppercase text-sky-300">Actividad 4 · Traducción Español → Inglés</span>
+              <h2 class="font-display text-xl font-bold text-white">¿Cómo se dice este verbo en inglés?</h2>
+              <p class="text-xs sm:text-sm text-slate-300">Lee la palabra en español, dilo en voz alta en inglés y selecciona o escribe el verbo.</p>
+            </div>
+
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="text-2xl font-display font-extrabold text-amber-300">"${escapeHtml(target.es)}"</div>
+                <span class="text-xs text-slate-400">Pista: ${escapeHtml(target.hint)}</span>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                ${options.map(o => `
+                  <button
+                    type="button"
+                    data-w1-es2en="${o.verb}"
+                    data-w1-es2en-target="${target.verb}"
+                    class="py-3 px-3 rounded-xl bg-[#131D3E] hover:bg-violet-500/25 border border-slate-700 hover:border-violet-400 font-display font-bold text-sm text-white transition"
+                  >
+                    ${escapeHtml(o.verb)}
+                  </button>
+                `).join('')}
+              </div>
+
+              <div class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row gap-2.5">
+                <input
+                  id="w1-es2en-input"
+                  type="text"
+                  placeholder="O escribe el verbo en inglés aquí (ej. RUN, GET UP)..."
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-[#111B38] border border-slate-700 focus:border-sky-400 focus:outline-none text-sm text-white"
+                />
+                <button
+                  id="w1-es2en-check-btn"
+                  type="button"
+                  data-target="${target.verb}"
+                  class="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs transition"
+                >
+                  Comprobar texto
+                </button>
+              </div>
+
+              <div id="w1-es2en-feedback" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // CHALLENGE: Actividad 5: Quiz de 10 preguntas aleatorias
+      if (!runtimeUI.quizQuestions || runtimeUI.quizQuestions.length !== 10) {
+        runtimeUI.quizQuestions = buildVocabQuiz10();
+      }
+      const qIdx = runtimeUI.quizIndex;
+      const finished = qIdx >= runtimeUI.quizQuestions.length;
+      const currentQ = runtimeUI.quizQuestions[qIdx];
+
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold uppercase text-amber-300">Actividad 5 · Desafío Final</span>
+              <h2 class="font-display text-xl font-bold text-white">Quiz de 10 Preguntas Aleatorias · Vocabulary Island</h2>
+            </div>
+            <button id="w1-quiz-restart" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-sky-300">
+              Nuevo Quiz (10)
+            </button>
+          </div>
+
+          ${finished ? `
+            <div class="rounded-2xl bg-[#090F22] border border-teal-400/40 p-6 text-center space-y-3">
+              <div class="text-3xl">🏝️✨</div>
+              <h3 class="font-display text-2xl font-extrabold text-white">¡Quiz Completado!</h3>
+              <p class="text-sm text-slate-200">
+                Obtuviste <strong class="text-amber-300">${runtimeUI.quizScore} / 10</strong> respuestas correctas.
+              </p>
+              <p class="text-xs text-slate-300">
+                ${runtimeUI.quizScore >= 7 ? '¡Excelente trabajo! Dominas muy bien los verbos A1. Ready for World 2!' : 'Buen intento. Repite el quiz o repasa las flashcards y sigue avanzando.'}
+              </p>
+              <div class="pt-2 flex flex-wrap justify-center gap-3">
+                <button id="w1-quiz-play-again" type="button" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold">
+                  Repetir Quiz
+                </button>
+                <button data-go-world="world2" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-teal-400 text-slate-950 font-extrabold text-xs">
+                  Ir a World 2 – Time Travel →
+                </button>
+              </div>
+            </div>
+          ` : `
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span class="font-bold text-sky-300">Pregunta ${qIdx + 1} de 10</span>
+                <span>Aciertos: <strong class="text-teal-300">${runtimeUI.quizScore}</strong></span>
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center gap-4">
+                ${currentQ.verbId ? `
+                  <div class="w-20 h-20 rounded-2xl bg-[#131D3E] border border-sky-400/25 flex items-center justify-center shrink-0">
+                    ${renderVerbSVG(currentQ.verbId, 'w-14 h-14')}
+                  </div>
+                ` : ''}
+                <h3 class="font-display text-lg font-bold text-white flex-1">${escapeHtml(currentQ.prompt)}</h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                ${currentQ.options.map(opt => {
+                  let styleClass = 'bg-[#131D3E] hover:bg-blue-500/20 border-slate-700 text-white';
+                  if (runtimeUI.quizAnswered) {
+                    if (opt === currentQ.answer) {
+                      styleClass = 'bg-emerald-500/25 border-emerald-400 text-emerald-200';
+                    } else if (opt === runtimeUI.quizSelectedOption) {
+                      styleClass = 'bg-rose-500/25 border-rose-400 text-rose-200';
+                    } else {
+                      styleClass = 'bg-[#0E162E] border-slate-800 text-slate-400';
+                    }
+                  }
+                  return `
+                    <button
+                      type="button"
+                      data-w1-quiz-opt="${escapeHtml(opt)}"
+                      ${runtimeUI.quizAnswered ? 'disabled' : ''}
+                      class="p-3 rounded-xl border text-left text-sm font-bold transition ${styleClass}"
+                    >
+                      ${escapeHtml(opt)}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <div id="w1-quiz-feedback" class="text-xs sm:text-sm font-semibold min-h-[1.5rem]">
+                ${runtimeUI.quizAnswered ? (
+                  runtimeUI.quizSelectedOption === currentQ.answer
+                    ? `<span class="text-emerald-300">Correct! ¡Muy bien! ${escapeHtml(currentQ.esExplain)}</span>`
+                    : `<span class="text-rose-300">Try again! La respuesta correcta es <strong>${escapeHtml(currentQ.answer)}</strong>. ${escapeHtml(currentQ.esExplain)}</span>`
+                ) : ''}
+              </div>
+
+              ${runtimeUI.quizAnswered ? `
+                <div class="flex justify-end">
+                  <button id="w1-quiz-next-btn" type="button" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold">
+                    ${qIdx + 1 === 10 ? 'Ver resultado final →' : 'Siguiente pregunta →'}
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function buildVocabQuiz10() {
+      const pool = shuffleArray(VOCAB_VERBS);
+      const questions = [];
+      for (let i = 0; i < 10; i++) {
+        const item = pool[i % pool.length];
+        const distractors = shuffleArray(VOCAB_VERBS.filter(v => v.id !== item.id)).slice(0, 3);
+        const mode = i % 3;
+        if (mode === 0) {
+          questions.push({
+            verbId: item.id,
+            prompt: `¿Qué verbo en inglés representa esta imagen y significa "${item.es}"?`,
+            options: shuffleArray([item.verb, ...distractors.map(d => d.verb)]),
+            answer: item.verb,
+            esExplain: `${item.verb} significa "${item.es}" (${item.example}).`
+          });
+        } else if (mode === 1) {
+          questions.push({
+            verbId: item.id,
+            prompt: `¿Cuál es la traducción al español del verbo "${item.verb}"?`,
+            options: shuffleArray([item.es, ...distractors.map(d => d.es)]),
+            answer: item.es,
+            esExplain: `"${item.verb}" se traduce como "${item.es}".`
+          });
+        } else {
+          questions.push({
+            verbId: item.id,
+            prompt: `Completa con el verbo correcto según el contexto: "${item.example.replace(new RegExp(item.verb, 'i'), '_____')}"`,
+            options: shuffleArray([item.verb, ...distractors.map(d => d.verb)]),
+            answer: item.verb,
+            esExplain: `La oración correcta es "${item.example}".`
+          });
+        }
+      }
+      return questions;
+    }
+
+    function renderWorld1MatchBoard() {
+      const board = document.getElementById('w1-match-board');
+      if (!board) return;
+      const subset = VOCAB_VERBS.slice(0, 6);
+      const leftItems = subset;
+      const rightItems = shuffleArray(subset);
+
+      board.innerHTML = `
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase text-slate-400">English</div>
+          ${leftItems.map(item => {
+            const matched = runtimeUI.matchMatchedIds.includes(item.id);
+            const selected = runtimeUI.matchSelectedEn === item.id;
+            return `
+              <button
+                type="button"
+                data-match-en="${item.id}"
+                ${matched ? 'disabled' : ''}
+                class="w-full py-2.5 px-3.5 rounded-xl border text-left font-display font-bold text-sm transition ${
+                  matched
+                    ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300'
+                    : selected
+                      ? 'bg-blue-500/25 border-sky-400 text-white'
+                      : 'bg-[#090F22] hover:bg-[#131D3E] border-slate-800 text-slate-100'
+                }"
+              >
+                ${escapeHtml(item.verb)} ${matched ? '✓' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase text-slate-400">Español</div>
+          ${rightItems.map(item => {
+            const matched = runtimeUI.matchMatchedIds.includes(item.id);
+            const selected = runtimeUI.matchSelectedEs === item.id;
+            return `
+              <button
+                type="button"
+                data-match-es="${item.id}"
+                ${matched ? 'disabled' : ''}
+                class="w-full py-2.5 px-3.5 rounded-xl border text-left text-sm font-semibold transition ${
+                  matched
+                    ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300'
+                    : selected
+                      ? 'bg-violet-500/25 border-violet-400 text-white'
+                      : 'bg-[#090F22] hover:bg-[#131D3E] border-slate-800 text-slate-200'
+                }"
+              >
+                ${escapeHtml(item.es)} ${matched ? '✓' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      board.querySelectorAll('[data-match-en]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.matchSelectedEn = btn.getAttribute('data-match-en');
+          evaluateW1Match();
+        });
+      });
+
+      board.querySelectorAll('[data-match-es]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.matchSelectedEs = btn.getAttribute('data-match-es');
+          evaluateW1Match();
+        });
+      });
+    }
+
+    function evaluateW1Match() {
+      const fb = document.getElementById('w1-match-feedback');
+      if (!runtimeUI.matchSelectedEn || !runtimeUI.matchSelectedEs) {
+        renderWorld1MatchBoard();
+        return;
+      }
+      if (runtimeUI.matchSelectedEn === runtimeUI.matchSelectedEs) {
+        const id = runtimeUI.matchSelectedEn;
+        if (!runtimeUI.matchMatchedIds.includes(id)) {
+          runtimeUI.matchMatchedIds.push(id);
+        }
+        runtimeUI.matchSelectedEn = null;
+        runtimeUI.matchSelectedEs = null;
+        SoundFX.correct();
+        const allDone = runtimeUI.matchMatchedIds.length === 6;
+        awardReward({
+          xp: 10,
+          stars: allDone ? 1 : 0,
+          coins: 5,
+          activityKey: allDone ? 'world1:match' : null,
+          reasonEs: allDone ? '¡Emparejaste todos los pares!' : '¡Par correcto!'
+        });
+        if (fb) {
+          fb.innerHTML = `<span class="text-emerald-300">Correct! ¡Excelente conexión! (${runtimeUI.matchMatchedIds.length}/6)</span>`;
+        }
+      } else {
+        SoundFX.wrong();
+        if (fb) {
+          fb.innerHTML = `<span class="text-rose-300">Try again! Ese par en inglés y español no coincide.</span>`;
+        }
+        runtimeUI.matchSelectedEn = null;
+        runtimeUI.matchSelectedEs = null;
+      }
+      renderWorld1MatchBoard();
+    }
+
+    function bindWorld1Events(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigateTo('world', 'world1', btn.getAttribute('data-next-step'));
+        });
+      });
+      document.querySelectorAll('[data-go-world]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigateTo('world', btn.getAttribute('data-go-world'), 'LEARN');
+        });
+      });
+
+      if (stepKey === 'PRACTICE') {
+        renderWorld1MatchBoard();
+        const resetMatch = document.getElementById('w1-match-reset');
+        if (resetMatch) {
+          resetMatch.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.matchSelectedEn = null;
+            runtimeUI.matchSelectedEs = null;
+            runtimeUI.matchMatchedIds = [];
+            renderWorld1MatchBoard();
+          });
+        }
+
+        document.querySelectorAll('[data-w1-img-choice]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w1-img-choice');
+            const correct = btn.getAttribute('data-w1-img-correct');
+            const fb = document.getElementById('w1-img-feedback');
+            if (chosen === correct) {
+              SoundFX.correct();
+              awardReward({
+                xp: 15,
+                stars: 1,
+                coins: 5,
+                activityKey: 'world1:img_choice',
+                reasonEs: '¡Identificaste el verbo según la imagen!'
+              });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! La imagen representa <strong>${escapeHtml(correct)}</strong> (levantarse).</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Mira bien la ilustración y prueba otra opción.</span>`;
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'REMEMBER') {
+        const prev = document.getElementById('w1-fc-prev');
+        const next = document.getElementById('w1-fc-next');
+        const rev = document.getElementById('w1-fc-reveal-btn');
+
+        if (prev) prev.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.flashcardIndex = (runtimeUI.flashcardIndex - 1 + VOCAB_VERBS.length) % VOCAB_VERBS.length;
+          runtimeUI.flashcardRevealed = false;
+          renderView();
+        });
+        if (next) next.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.flashcardIndex = (runtimeUI.flashcardIndex + 1) % VOCAB_VERBS.length;
+          runtimeUI.flashcardRevealed = false;
+          awardReward({ xp: 5, coins: 2, activityKey: 'world1:flashcards' });
+          renderView();
+        });
+        if (rev) rev.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.flashcardRevealed = !runtimeUI.flashcardRevealed;
+          renderView();
+        });
+      }
+
+      if (stepKey === 'SPEAK') {
+        document.querySelectorAll('[data-w1-es2en]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const picked = btn.getAttribute('data-w1-es2en');
+            const target = btn.getAttribute('data-w1-es2en-target');
+            const fb = document.getElementById('w1-es2en-feedback');
+            if (picked === target) {
+              SoundFX.correct();
+              awardReward({
+                xp: 15,
+                stars: 1,
+                coins: 5,
+                activityKey: 'world1:es2en',
+                reasonEs: `Tradujiste "${target}" correctamente.`
+              });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! En inglés se dice <strong>${escapeHtml(target)}</strong>.</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Ese verbo no corresponde a la traducción mostrada.</span>`;
+            }
+          });
+        });
+
+        const checkBtn = document.getElementById('w1-es2en-check-btn');
+        const inputEl = document.getElementById('w1-es2en-input');
+        if (checkBtn && inputEl) {
+          checkBtn.addEventListener('click', () => {
+            const val = inputEl.value.trim().toUpperCase();
+            const target = checkBtn.getAttribute('data-target').toUpperCase();
+            const fb = document.getElementById('w1-es2en-feedback');
+            if (!val) {
+              if (fb) fb.innerHTML = `<span class="text-amber-300">Escribe un verbo o elige una opción arriba.</span>`;
+              return;
+            }
+            if (val === target) {
+              SoundFX.correct();
+              awardReward({
+                xp: 20,
+                stars: 1,
+                coins: 8,
+                activityKey: 'world1:es2en',
+                reasonEs: `¡Escribiste ${target} sin ayuda!`
+              });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ¡Excelente escritura: <strong>${escapeHtml(target)}</strong>!</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Revisa la ortografía en inglés e inténtalo de nuevo.</span>`;
+            }
+          });
+        }
+      }
+
+      if (stepKey === 'CHALLENGE') {
+        document.querySelectorAll('[data-w1-quiz-opt]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (runtimeUI.quizAnswered) return;
+            const chosen = btn.getAttribute('data-w1-quiz-opt');
+            const currentQ = runtimeUI.quizQuestions[runtimeUI.quizIndex];
+            runtimeUI.quizAnswered = true;
+            runtimeUI.quizSelectedOption = chosen;
+            if (chosen === currentQ.answer) {
+              runtimeUI.quizScore += 1;
+              SoundFX.correct();
+              awardReward({ xp: 10, coins: 4 });
+            } else {
+              SoundFX.wrong();
+            }
+            renderView();
+          });
+        });
+
+        const nextQBtn = document.getElementById('w1-quiz-next-btn');
+        if (nextQBtn) {
+          nextQBtn.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.quizIndex += 1;
+            runtimeUI.quizAnswered = false;
+            runtimeUI.quizSelectedOption = null;
+            if (runtimeUI.quizIndex >= runtimeUI.quizQuestions.length) {
+              awardReward({
+                xp: 25,
+                stars: 1,
+                coins: 15,
+                activityKey: 'world1:quiz10',
+                reasonEs: '¡Completaste el Quiz de 10 preguntas!'
+              });
+            }
+            renderView();
+          });
+        }
+
+        const restartBtn = document.getElementById('w1-quiz-restart');
+        const playAgainBtn = document.getElementById('w1-quiz-play-again');
+        [restartBtn, playAgainBtn].forEach(b => {
+          if (b) {
+            b.addEventListener('click', () => {
+              SoundFX.click();
+              runtimeUI.quizQuestions = buildVocabQuiz10();
+              runtimeUI.quizIndex = 0;
+              runtimeUI.quizScore = 0;
+              runtimeUI.quizAnswered = false;
+              runtimeUI.quizSelectedOption = null;
+              renderView();
+            });
+          }
+        });
+      }
+    }
+
+    /* =========================================================================
+       10. WORLD 2 – TIME TRAVEL (YESTERDAY / ON MONDAYS / NOW + 5 ACTIVIDADES)
+       ========================================================================= */
+    function renderWorld2Step(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="space-y-6">
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 class="font-display text-xl sm:text-2xl font-bold text-white">⏳ World 2 – Time Travel</h2>
+                  <p class="text-sm text-slate-300 mt-1">
+                    Observa cómo cambia el tiempo verbal según las marcas de tiempo del material: <strong>YESTERDAY</strong>, <strong>ON MONDAYS</strong> y <strong>NOW</strong>.
+                  </p>
+                </div>
+                <button data-next-step="PRACTICE" class="px-4 py-2 rounded-xl bg-violet-500 hover:bg-violet-400 text-white text-xs font-bold">
+                  Pasar a 2. PRACTICE →
+                </button>
+              </div>
+
+              <!-- Reglas gramaticales en español -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div class="rounded-2xl bg-[#090F22] border border-amber-400/30 p-4 space-y-1.5">
+                  <div class="text-xs font-bold uppercase text-amber-300">Past (YESTERDAY)</div>
+                  <p class="text-xs sm:text-sm text-slate-200"><strong>Past:</strong> verbo en pasado.</p>
+                  <p class="text-xs text-slate-400">Ejemplo: <span class="text-amber-200 font-semibold">"She went to the gym."</span></p>
+                </div>
+                <div class="rounded-2xl bg-[#090F22] border border-sky-400/30 p-4 space-y-1.5">
+                  <div class="text-xs font-bold uppercase text-sky-300">Present Simple (ON MONDAYS)</div>
+                  <p class="text-xs sm:text-sm text-slate-200"><strong>Present Simple:</strong> verbo base y <strong>S</strong> con <strong>he/she/it</strong>, según el ejemplo del material.</p>
+                  <p class="text-xs text-slate-400">Ejemplo: <span class="text-sky-200 font-semibold">"She gets up at 7:00 a.m."</span></p>
+                </div>
+                <div class="rounded-2xl bg-[#090F22] border border-teal-400/30 p-4 space-y-1.5">
+                  <div class="text-xs font-bold uppercase text-teal-300">Present Continuous (NOW)</div>
+                  <p class="text-xs sm:text-sm text-slate-200"><strong>Present Continuous:</strong> <strong>am/is/are</strong> + verbo <strong>ING</strong>.</p>
+                  <p class="text-xs text-slate-400">Ejemplo: <span class="text-teal-200 font-semibold">"She is studying now."</span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Línea de tiempo visual con ejemplos exactos -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <h3 class="font-display text-lg font-bold text-white">Línea de Tiempo Visual</h3>
+              <div class="relative grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${TIME_TRAVEL_MARKERS.map(m => `
+                  <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4 flex flex-col justify-between gap-3">
+                    <div>
+                      <span class="inline-block px-2.5 py-1 rounded-lg border text-xs font-bold ${m.badgeColor}">
+                        ${escapeHtml(m.marker)} = ${escapeHtml(m.tense)}
+                      </span>
+                      <p class="font-display font-bold text-base text-white mt-3">"${escapeHtml(m.example)}"</p>
+                      <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">${escapeHtml(m.esExplanation)}</p>
+                    </div>
+                    <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-2">
+                      Clave: ${escapeHtml(m.ruleShort)}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'PRACTICE') {
+        // 1) Clasificar oraciones por tiempo verbal + 2) Elegir la estructura correcta
+        const cItem = TIME_CLASSIFY_ITEMS[0];
+        const sItem = TIME_STRUCTURE_QUESTIONS[0];
+        return `
+          <div class="space-y-6">
+            <!-- 1. Clasificar oraciones por tiempo verbal -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div>
+                <span class="text-xs font-bold uppercase text-sky-300">Actividad 1 · Clasificar Oraciones</span>
+                <h3 class="font-display text-lg sm:text-xl font-bold text-white">Clasifica la oración según su tiempo verbal</h3>
+              </div>
+              <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4 space-y-3">
+                <p class="font-display text-lg font-bold text-white">"${escapeHtml(cItem.sentence)}"</p>
+                <div class="flex flex-wrap gap-2.5">
+                  ${['PAST SIMPLE', 'PRESENT SIMPLE', 'PRESENT CONTINUOUS'].map(t => `
+                    <button
+                      type="button"
+                      data-w2-classify="${t}"
+                      data-w2-classify-ans="${cItem.tense}"
+                      class="px-4 py-2.5 rounded-xl bg-[#131D3E] hover:bg-blue-500/25 border border-slate-700 hover:border-sky-400 text-xs sm:text-sm font-bold text-white transition"
+                    >
+                      ${t}
+                    </button>
+                  `).join('')}
+                </div>
+                <div id="w2-classify-fb" class="text-xs sm:text-sm font-semibold"></div>
+              </div>
+            </div>
+
+            <!-- 2. Elegir la estructura correcta -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div>
+                <span class="text-xs font-bold uppercase text-violet-300">Actividad 2 · Estructura Correcta</span>
+                <h3 class="font-display text-lg sm:text-xl font-bold text-white">${escapeHtml(sItem.prompt)}</h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                ${shuffleArray(sItem.options).map(opt => `
+                  <button
+                    type="button"
+                    data-w2-struct="${escapeHtml(opt)}"
+                    data-w2-struct-ans="${escapeHtml(sItem.answer)}"
+                    class="p-3.5 rounded-xl bg-[#090F22] hover:bg-violet-500/20 border border-slate-700 hover:border-violet-400 text-xs sm:text-sm font-bold text-white text-left transition"
+                  >
+                    ${escapeHtml(opt)}
+                  </button>
+                `).join('')}
+              </div>
+              <div id="w2-struct-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'REMEMBER') {
+        // 3) Completar oraciones
+        const item = TIME_COMPLETE_ITEMS[0];
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div>
+              <span class="text-xs font-bold uppercase text-teal-300">Actividad 3 · Completar Oraciones</span>
+              <h2 class="font-display text-xl font-bold text-white">Completa con la forma verbal correcta</h2>
+            </div>
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+              <p class="font-display text-lg sm:text-xl font-bold text-white">
+                ${escapeHtml(item.before)} <span class="px-2.5 py-0.5 rounded bg-sky-500/20 border border-sky-400/40 text-sky-300">_____</span> ${escapeHtml(item.after)}
+              </p>
+              <div class="flex flex-wrap gap-2.5">
+                ${shuffleArray(item.options).map(opt => `
+                  <button
+                    type="button"
+                    data-w2-comp="${escapeHtml(opt)}"
+                    data-w2-comp-ans="${escapeHtml(item.answer)}"
+                    class="px-4 py-2.5 rounded-xl bg-[#131D3E] hover:bg-teal-500/20 border border-slate-700 hover:border-teal-400 font-bold text-sm text-white transition"
+                  >
+                    ${escapeHtml(opt)}
+                  </button>
+                `).join('')}
+              </div>
+              <div id="w2-comp-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'SPEAK') {
+        // 4) Ordenar palabras
+        const targetObj = TIME_ORDER_ITEMS[runtimeUI.orderIndex % TIME_ORDER_ITEMS.length];
+        if (!runtimeUI.orderCurrent || runtimeUI.orderCurrent.length === 0) {
+          runtimeUI.orderCurrent = shuffleArray(targetObj.words);
+        }
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold uppercase text-amber-300">Actividad 4 · Ordenar Palabras</span>
+                <h2 class="font-display text-xl font-bold text-white">Forma una oración correcta y dila en voz alta</h2>
+              </div>
+              <button id="w2-order-reset" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">
+                Mezclar palabras
+              </button>
+            </div>
+
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+              <p class="text-xs text-slate-400">Pista en español: ${escapeHtml(targetObj.es)}</p>
+              <div class="flex flex-wrap gap-2">
+                ${runtimeUI.orderCurrent.map(w => `
+                  <span class="px-3.5 py-2 rounded-xl bg-[#131D3E] border border-sky-400/30 font-display font-bold text-sm text-sky-200">
+                    ${escapeHtml(w)}
+                  </span>
+                `).join('')}
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2.5">
+                <input
+                  id="w2-order-input"
+                  type="text"
+                  placeholder="Escribe la oración ordenada (ej. She went to the gym.)..."
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-[#111B38] border border-slate-700 focus:border-sky-400 focus:outline-none text-sm text-white"
+                />
+                <button id="w2-order-check" type="button" class="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs">
+                  Comprobar orden
+                </button>
+                <button id="w2-order-next" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 font-bold text-xs">
+                  Siguiente oración →
+                </button>
+              </div>
+              <div id="w2-order-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // CHALLENGE: 5) Detectar errores
+      const errItem = TIME_ERROR_ITEMS[0];
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+          <div>
+            <span class="text-xs font-bold uppercase text-rose-300">Actividad 5 · Detectar Errores</span>
+            <h2 class="font-display text-xl font-bold text-white">Encuentra cómo corregir la oración</h2>
+          </div>
+          <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+            <p class="font-display text-lg font-bold text-rose-200">
+              "${escapeHtml(errItem.wrongSentence)}"
+            </p>
+            <div class="grid grid-cols-1 gap-2.5">
+              ${shuffleArray(errItem.options).map(opt => `
+                <button
+                  type="button"
+                  data-w2-err="${escapeHtml(opt)}"
+                  data-w2-err-ans="${escapeHtml(errItem.answer)}"
+                  class="p-3.5 rounded-xl bg-[#131D3E] hover:bg-blue-500/20 border border-slate-700 hover:border-sky-400 text-left text-xs sm:text-sm font-semibold text-white transition"
+                >
+                  ${escapeHtml(opt)}
+                </button>
+              `).join('')}
+            </div>
+            <div id="w2-err-fb" class="text-xs sm:text-sm font-semibold"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindWorld2Events(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('world', 'world2', btn.getAttribute('data-next-step')));
+      });
+
+      if (stepKey === 'PRACTICE') {
+        document.querySelectorAll('[data-w2-classify]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w2-classify');
+            const ans = btn.getAttribute('data-w2-classify-ans');
+            const fb = document.getElementById('w2-classify-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 15, stars: 1, coins: 5, activityKey: 'world2:classify', reasonEs: '¡Clasificaste el tiempo verbal correctamente!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! Es <strong>${escapeHtml(ans)}</strong> porque "went" indica pasado.</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Fíjate en el verbo "went" y el contexto de pasado.</span>`;
+            }
+          });
+        });
+
+        document.querySelectorAll('[data-w2-struct]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w2-struct');
+            const ans = btn.getAttribute('data-w2-struct-ans');
+            const fb = document.getElementById('w2-struct-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 15, coins: 5, activityKey: 'world2:structure', reasonEs: '¡Estructura correcta!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(TIME_STRUCTURE_QUESTIONS[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Recuerda la regla para NOW (Present Continuous).</span>`;
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'REMEMBER') {
+        document.querySelectorAll('[data-w2-comp]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w2-comp');
+            const ans = btn.getAttribute('data-w2-comp-ans');
+            const fb = document.getElementById('w2-comp-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 15, stars: 1, coins: 5, activityKey: 'world2:complete', reasonEs: '¡Oración completada!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(TIME_COMPLETE_ITEMS[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Revisa el marcador de tiempo ("Yesterday").</span>`;
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'SPEAK') {
+        const resetBtn = document.getElementById('w2-order-reset');
+        const nextBtn = document.getElementById('w2-order-next');
+        const checkBtn = document.getElementById('w2-order-check');
+        const inputEl = document.getElementById('w2-order-input');
+
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            SoundFX.click();
+            const obj = TIME_ORDER_ITEMS[runtimeUI.orderIndex % TIME_ORDER_ITEMS.length];
+            runtimeUI.orderCurrent = shuffleArray(obj.words);
+            renderView();
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.orderIndex += 1;
+            const obj = TIME_ORDER_ITEMS[runtimeUI.orderIndex % TIME_ORDER_ITEMS.length];
+            runtimeUI.orderCurrent = shuffleArray(obj.words);
+            renderView();
+          });
+        }
+
+        if (checkBtn && inputEl) {
+          checkBtn.addEventListener('click', () => {
+            const obj = TIME_ORDER_ITEMS[runtimeUI.orderIndex % TIME_ORDER_ITEMS.length];
+            const cleanUser = inputEl.value.trim().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').toLowerCase();
+            const cleanTarget = obj.correct.replace(/[.!?]+$/, '').toLowerCase();
+            const fb = document.getElementById('w2-order-fb');
+            if (cleanUser === cleanTarget) {
+              SoundFX.correct();
+              awardReward({ xp: 20, stars: 1, coins: 8, activityKey: 'world2:order', reasonEs: '¡Ordenaste la oración perfectamente!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! Modelo: <strong>${escapeHtml(obj.correct)}</strong></span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Modelo esperado: <strong>${escapeHtml(obj.correct)}</strong></span>`;
+            }
+          });
+        }
+      }
+
+      if (stepKey === 'CHALLENGE') {
+        document.querySelectorAll('[data-w2-err]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w2-err');
+            const ans = btn.getAttribute('data-w2-err-ans');
+            const fb = document.getElementById('w2-err-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 20, stars: 1, coins: 10, activityKey: 'world2:error', reasonEs: '¡Detectaste el error gramatical!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(TIME_ERROR_ITEMS[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Observa qué tiempo verbal indica la oración.</span>`;
+            }
+          });
+        });
+      }
+    }
+
+    /* =========================================================================
+       11. WORLD 3 – PAST SIMPLE CASTLE (12 VERBOS ESTRICTOS + MEMORIA + DID)
+       ========================================================================= */
+    function setupMemoryGame() {
+      const pick6 = shuffleArray(PAST_VERBS).slice(0, 6);
+      const cards = [];
+      pick6.forEach((item, idx) => {
+        cards.push({ uid: `${idx}-base`, pairId: idx, label: item.base, kind: 'BASE' });
+        cards.push({ uid: `${idx}-past`, pairId: idx, label: item.past, kind: 'PAST' });
+      });
+      runtimeUI.memoryCards = shuffleArray(cards);
+      runtimeUI.memoryFlipped = [];
+      runtimeUI.memoryMatched = [];
+    }
+
+    function renderWorld3Step(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="font-display text-xl sm:text-2xl font-bold text-white">🏰 World 3 – Past Simple Castle (12 Transformaciones)</h2>
+                <p class="text-sm text-slate-300 mt-1">
+                  Aprende exclusivamente estas <strong>12 transformaciones en pasado</strong> del material.
+                </p>
+              </div>
+              <button data-next-step="PRACTICE" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">
+                Pasar a 2. PRACTICE →
+              </button>
+            </div>
+
+            <!-- Nota especial obligatoria sobre READ -> RED -->
+            <div class="rounded-2xl bg-amber-500/10 border border-amber-400/40 p-4">
+              <p class="text-xs sm:text-sm text-amber-200 font-semibold">
+                💡 Nota especial de pronunciación: <strong>READ</strong> en pasado <strong>mantiene la escritura (READ), pero se pronuncia RED</strong>.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              ${PAST_VERBS.map(v => `
+                <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4 space-y-1">
+                  <div class="flex items-center justify-between font-display font-bold text-sm">
+                    <span class="text-sky-300">${escapeHtml(v.base)}</span>
+                    <span class="text-slate-500">→</span>
+                    <span class="text-amber-300">${escapeHtml(v.past)}</span>
+                  </div>
+                  <div class="text-xs text-slate-300">${escapeHtml(v.es)}</div>
+                  <div class="text-[11px] text-slate-400">${escapeHtml(v.note)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'PRACTICE') {
+        // Matching base <-> past + Complete the sentence
+        const sItem = PAST_SENTENCE_ITEMS[0];
+        return `
+          <div class="space-y-6">
+            <!-- Matching -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-bold uppercase text-purple-300">Matching · Forma Base a Pasado</span>
+                  <h3 class="font-display text-lg font-bold text-white">Conecta el verbo base con su forma en pasado</h3>
+                </div>
+                <button id="w3-match-reset" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">Reiniciar</button>
+              </div>
+              <div id="w3-match-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+              <div id="w3-match-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+
+            <!-- Complete the sentence -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div>
+                <span class="text-xs font-bold uppercase text-amber-300">Complete the sentence</span>
+                <h3 class="font-display text-lg font-bold text-white">
+                  ${escapeHtml(sItem.before)} <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-200">_____</span> ${escapeHtml(sItem.after)}
+                </h3>
+              </div>
+              <div class="flex flex-wrap gap-2.5">
+                ${shuffleArray(sItem.options).map(opt => `
+                  <button
+                    type="button"
+                    data-w3-sent="${opt}"
+                    data-w3-sent-ans="${sItem.answer}"
+                    class="px-4 py-2.5 rounded-xl bg-[#090F22] hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 font-display font-bold text-sm text-white transition"
+                  >
+                    ${escapeHtml(opt)}
+                  </button>
+                `).join('')}
+              </div>
+              <div id="w3-sent-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'REMEMBER') {
+        // Flashcards + Memory game
+        const card = PAST_VERBS[runtimeUI.pastFlashIndex % PAST_VERBS.length];
+        return `
+          <div class="space-y-6">
+            <!-- Flashcards de pasado -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-bold uppercase text-sky-300">Flashcards de Pasado</span>
+                  <h2 class="font-display text-xl font-bold text-white">Verbo ${(runtimeUI.pastFlashIndex % PAST_VERBS.length) + 1} de ${PAST_VERBS.length}</h2>
+                </div>
+                <div class="flex gap-2">
+                  <button id="w3-fc-prev" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">← Anterior</button>
+                  <button id="w3-fc-next" type="button" class="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">Siguiente →</button>
+                </div>
+              </div>
+
+              <div class="max-w-lg mx-auto rounded-2xl bg-[#090F22] border border-purple-400/30 p-6 text-center space-y-3">
+                <div class="font-display text-3xl font-extrabold text-sky-300">${escapeHtml(card.base)}</div>
+                <button id="w3-fc-reveal" type="button" class="px-4 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold">
+                  ${runtimeUI.pastFlashRevealed ? 'Ocultar pasado' : 'Revelar forma en pasado'}
+                </button>
+                ${runtimeUI.pastFlashRevealed ? `
+                  <div class="rounded-xl bg-amber-500/10 border border-amber-400/35 p-3.5 animate-fade-up space-y-1">
+                    <div class="font-display text-xl font-extrabold text-amber-300">${escapeHtml(card.past)}</div>
+                    <div class="text-xs text-slate-200">${escapeHtml(card.es)}</div>
+                    <div class="text-[11px] text-teal-300">${escapeHtml(card.note)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Memory game -->
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span class="text-xs font-bold uppercase text-teal-300">Memory Game</span>
+                  <h3 class="font-display text-lg font-bold text-white">Une cada verbo base con su pasado</h3>
+                </div>
+                <button id="w3-mem-reset" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-teal-300">
+                  Nuevo tablero
+                </button>
+              </div>
+
+              <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                ${runtimeUI.memoryCards.map(c => {
+                  const isFlipped = runtimeUI.memoryFlipped.includes(c.uid) || runtimeUI.memoryMatched.includes(c.uid);
+                  const isMatched = runtimeUI.memoryMatched.includes(c.uid);
+                  return `
+                    <button
+                      type="button"
+                      data-mem-uid="${c.uid}"
+                      class="memory-card h-24 rounded-2xl focus:outline-none ${isFlipped ? 'flipped' : ''}"
+                    >
+                      <div class="memory-card-inner relative w-full h-full">
+                        <div class="memory-face absolute inset-0 rounded-2xl bg-[#111B38] hover:bg-[#192852] border border-slate-700 flex flex-col items-center justify-center">
+                          <span class="font-display font-bold text-lg text-sky-300">?</span>
+                          <span class="text-[10px] text-slate-400">CASTLE</span>
+                        </div>
+                        <div class="memory-face memory-back absolute inset-0 rounded-2xl ${isMatched ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200' : 'bg-[#182652] border-amber-400/50 text-white'} border flex flex-col items-center justify-center p-2">
+                          <span class="text-[10px] uppercase font-bold text-slate-300">${c.kind}</span>
+                          <span class="font-display font-extrabold text-sm text-center mt-0.5">${escapeHtml(c.label)}</span>
+                        </div>
+                      </div>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+              <div id="w3-mem-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (stepKey === 'SPEAK') {
+        // Diferencia entre pregunta con DID y respuesta en pasado
+        const dItem = DID_VS_PAST_ITEMS[0];
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <div>
+              <span class="text-xs font-bold uppercase text-sky-300">Diferencia entre pregunta con DID y respuesta en pasado</span>
+              <h2 class="font-display text-xl font-bold text-white">¿Cuándo usar verbo base con DID y cuándo usar pasado?</h2>
+              <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                En preguntas con <strong>DID</strong> (ej. <em>Did you go...?</em>), el verbo va en <strong>forma base</strong>. En la respuesta afirmativa (ej. <em>I went...</em>), el verbo va en <strong>pasado</strong>.
+              </p>
+            </div>
+
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 space-y-4">
+              <div class="text-xs font-bold uppercase text-amber-300">${escapeHtml(dItem.type)}</div>
+              <p class="font-display text-lg font-bold text-white">${escapeHtml(dItem.prompt)}</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                ${dItem.options.map(opt => `
+                  <button
+                    type="button"
+                    data-w3-did="${escapeHtml(opt)}"
+                    data-w3-did-ans="${escapeHtml(dItem.answer)}"
+                    class="p-3.5 rounded-xl bg-[#131D3E] hover:bg-blue-500/20 border border-slate-700 hover:border-sky-400 text-left text-sm font-bold text-white transition"
+                  >
+                    ${escapeHtml(opt)}
+                  </button>
+                `).join('')}
+              </div>
+              <div id="w3-did-fb" class="text-xs sm:text-sm font-semibold"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // CHALLENGE: Choose the correct past verb
+      const targetVerb = PAST_VERBS[1]; // GO -> WENT
+      const opts = shuffleArray([PAST_VERBS[1], PAST_VERBS[2], PAST_VERBS[7], PAST_VERBS[9]]);
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+          <div>
+            <span class="text-xs font-bold uppercase text-amber-300">Desafío · Choose the correct past verb</span>
+            <h2 class="font-display text-xl font-bold text-white">¿Cuál es la forma en pasado de "${escapeHtml(targetVerb.base)}"?</h2>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            ${opts.map(o => `
+              <button
+                type="button"
+                data-w3-past-choice="${o.past}"
+                data-w3-past-ans="${targetVerb.past}"
+                class="p-3.5 rounded-xl bg-[#090F22] hover:bg-purple-500/20 border border-slate-700 hover:border-purple-400 font-display font-bold text-base text-white transition"
+              >
+                ${escapeHtml(o.past)}
+              </button>
+            `).join('')}
+          </div>
+          <div id="w3-past-fb" class="text-xs sm:text-sm font-semibold"></div>
+        </div>
+      `;
+    }
+
+    function renderW3MatchGrid() {
+      const grid = document.getElementById('w3-match-grid');
+      if (!grid) return;
+      const subset = PAST_VERBS.slice(0, 5);
+      const rightShuffled = shuffleArray(subset);
+
+      grid.innerHTML = `
+        <div class="space-y-2">
+          ${subset.map(v => {
+            const done = runtimeUI.pastMatchPairs.includes(v.base);
+            const sel = runtimeUI.pastMatchSelectedBase === v.base;
+            return `
+              <button type="button" data-w3-base="${v.base}" ${done ? 'disabled' : ''} class="w-full py-2.5 px-3.5 rounded-xl border text-left font-display font-bold text-sm transition ${
+                done ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300' : sel ? 'bg-blue-500/25 border-sky-400 text-white' : 'bg-[#090F22] border-slate-800 text-slate-100'
+              }">
+                ${escapeHtml(v.base)} ${done ? '✓' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <div class="space-y-2">
+          ${rightShuffled.map(v => {
+            const done = runtimeUI.pastMatchPairs.includes(v.base);
+            const sel = runtimeUI.pastMatchSelectedPast === v.base;
+            return `
+              <button type="button" data-w3-past-match="${v.base}" ${done ? 'disabled' : ''} class="w-full py-2.5 px-3.5 rounded-xl border text-left font-display font-bold text-sm transition ${
+                done ? 'bg-emerald-500/15 border-emerald-400/50 text-emerald-300' : sel ? 'bg-amber-500/25 border-amber-400 text-amber-200' : 'bg-[#090F22] border-slate-800 text-slate-200'
+              }">
+                ${escapeHtml(v.past)} ${done ? '✓' : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      grid.querySelectorAll('[data-w3-base]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastMatchSelectedBase = btn.getAttribute('data-w3-base');
+          checkW3Match();
+        });
+      });
+      grid.querySelectorAll('[data-w3-past-match]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastMatchSelectedPast = btn.getAttribute('data-w3-past-match');
+          checkW3Match();
+        });
+      });
+    }
+
+    function checkW3Match() {
+      const fb = document.getElementById('w3-match-fb');
+      if (!runtimeUI.pastMatchSelectedBase || !runtimeUI.pastMatchSelectedPast) {
+        renderW3MatchGrid();
+        return;
+      }
+      if (runtimeUI.pastMatchSelectedBase === runtimeUI.pastMatchSelectedPast) {
+        const key = runtimeUI.pastMatchSelectedBase;
+        if (!runtimeUI.pastMatchPairs.includes(key)) {
+          runtimeUI.pastMatchPairs.push(key);
+        }
+        runtimeUI.pastMatchSelectedBase = null;
+        runtimeUI.pastMatchSelectedPast = null;
+        SoundFX.correct();
+        const complete = runtimeUI.pastMatchPairs.length === 5;
+        awardReward({
+          xp: 10,
+          stars: complete ? 1 : 0,
+          coins: 5,
+          activityKey: complete ? 'world3:match' : null,
+          reasonEs: complete ? '¡Completaste el emparejamiento de pasado!' : '¡Par de pasado correcto!'
+        });
+        if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ¡Buen trabajo! (${runtimeUI.pastMatchPairs.length}/5)</span>`;
+      } else {
+        SoundFX.wrong();
+        if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Ese pasado no corresponde al verbo base seleccionado.</span>`;
+        runtimeUI.pastMatchSelectedBase = null;
+        runtimeUI.pastMatchSelectedPast = null;
+      }
+      renderW3MatchGrid();
+    }
+
+    function bindWorld3Events(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('world', 'world3', btn.getAttribute('data-next-step')));
+      });
+
+      if (stepKey === 'PRACTICE') {
+        renderW3MatchGrid();
+        const resetM = document.getElementById('w3-match-reset');
+        if (resetM) resetM.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastMatchPairs = [];
+          runtimeUI.pastMatchSelectedBase = null;
+          runtimeUI.pastMatchSelectedPast = null;
+          renderW3MatchGrid();
+        });
+
+        document.querySelectorAll('[data-w3-sent]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w3-sent');
+            const ans = btn.getAttribute('data-w3-sent-ans');
+            const fb = document.getElementById('w3-sent-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 15, stars: 1, coins: 5, activityKey: 'world3:sentence', reasonEs: '¡Oración en pasado correcta!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(PAST_SENTENCE_ITEMS[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Revisa la forma en pasado del verbo.</span>`;
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'REMEMBER') {
+        const prev = document.getElementById('w3-fc-prev');
+        const next = document.getElementById('w3-fc-next');
+        const rev = document.getElementById('w3-fc-reveal');
+        if (prev) prev.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastFlashIndex = (runtimeUI.pastFlashIndex - 1 + PAST_VERBS.length) % PAST_VERBS.length;
+          runtimeUI.pastFlashRevealed = false;
+          renderView();
+        });
+        if (next) next.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastFlashIndex = (runtimeUI.pastFlashIndex + 1) % PAST_VERBS.length;
+          runtimeUI.pastFlashRevealed = false;
+          awardReward({ xp: 5, coins: 2, activityKey: 'world3:flashcards' });
+          renderView();
+        });
+        if (rev) rev.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.pastFlashRevealed = !runtimeUI.pastFlashRevealed;
+          renderView();
+        });
+
+        const memReset = document.getElementById('w3-mem-reset');
+        if (memReset) memReset.addEventListener('click', () => {
+          SoundFX.click();
+          setupMemoryGame();
+          renderView();
+        });
+
+        document.querySelectorAll('[data-mem-uid]').forEach(cardBtn => {
+          cardBtn.addEventListener('click', () => {
+            const uid = cardBtn.getAttribute('data-mem-uid');
+            if (runtimeUI.memoryMatched.includes(uid) || runtimeUI.memoryFlipped.includes(uid)) return;
+            if (runtimeUI.memoryFlipped.length >= 2) return;
+
+            SoundFX.click();
+            runtimeUI.memoryFlipped.push(uid);
+            renderView();
+
+            if (runtimeUI.memoryFlipped.length === 2) {
+              const [aUid, bUid] = runtimeUI.memoryFlipped;
+              const aCard = runtimeUI.memoryCards.find(x => x.uid === aUid);
+              const bCard = runtimeUI.memoryCards.find(x => x.uid === bUid);
+              const fb = document.getElementById('w3-mem-fb');
+
+              if (aCard && bCard && aCard.pairId === bCard.pairId) {
+                runtimeUI.memoryMatched.push(aUid, bUid);
+                runtimeUI.memoryFlipped = [];
+                SoundFX.correct();
+                const allMatched = runtimeUI.memoryMatched.length === runtimeUI.memoryCards.length;
+                awardReward({
+                  xp: 10,
+                  stars: allMatched ? 1 : 0,
+                  coins: 5,
+                  activityKey: allMatched ? 'world3:memory' : null,
+                  reasonEs: allMatched ? '¡Completaste el Memory Game!' : '¡Par encontrado!'
+                });
+                renderView();
+              } else {
+                SoundFX.wrong();
+                if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! No forman el mismo par base/pasado.</span>`;
+                setTimeout(() => {
+                  runtimeUI.memoryFlipped = [];
+                  renderView();
+                }, 750);
+              }
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'SPEAK') {
+        document.querySelectorAll('[data-w3-did]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w3-did');
+            const ans = btn.getAttribute('data-w3-did-ans');
+            const fb = document.getElementById('w3-did-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 15, stars: 1, coins: 6, activityKey: 'world3:did_vs_past', reasonEs: '¡Dominaste DID vs pasado!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(DID_VS_PAST_ITEMS[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Recuerda que DID ya marca el pasado en la pregunta.</span>`;
+            }
+          });
+        });
+      }
+
+      if (stepKey === 'CHALLENGE') {
+        document.querySelectorAll('[data-w3-past-choice]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-w3-past-choice');
+            const ans = btn.getAttribute('data-w3-past-ans');
+            const fb = document.getElementById('w3-past-fb');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({ xp: 20, stars: 1, coins: 10, activityKey: 'world3:past_choice', reasonEs: '¡Elegiste el pasado correcto!' });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! El pasado de <strong>GO</strong> es <strong>WENT</strong>.</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Ese no es el pasado de GO.</span>`;
+            }
+          });
+        });
+      }
+    }
+
+    /* =========================================================================
+       12. WORLD 4 – SPEAKING ARENA (6 YES/NO + 8 WH-QUESTIONS + RANDOM MODE)
+       ========================================================================= */
+    function startSpeakingCountdown() {
+      if (speakingIntervalId) {
+        clearInterval(speakingIntervalId);
+        speakingIntervalId = null;
+      }
+      runtimeUI.speakingTimer = 10;
+      runtimeUI.speakingTimerRunning = true;
+      updateSpeakingTimerDOM();
+
+      speakingIntervalId = setInterval(() => {
+        if (runtimeUI.speakingTimer > 1) {
+          runtimeUI.speakingTimer -= 1;
+          updateSpeakingTimerDOM();
+        } else {
+          runtimeUI.speakingTimer = 0;
+          runtimeUI.speakingTimerRunning = false;
+          clearInterval(speakingIntervalId);
+          speakingIntervalId = null;
+          updateSpeakingTimerDOM();
+        }
+      }, 1000);
+    }
+
+    function updateSpeakingTimerDOM() {
+      const el = document.getElementById('w4-timer-badge');
+      if (el) {
+        el.textContent = runtimeUI.speakingTimer > 0
+          ? `⏱️ Tiempo para pensar: ${runtimeUI.speakingTimer}s`
+          : '⏱️ ¡Listo para responder!';
+      }
+    }
+
+    function renderWorld4Step(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="space-y-6">
+            <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 class="font-display text-xl sm:text-2xl font-bold text-white">🎤 World 4 – Speaking Arena</h2>
+                  <p class="text-sm text-slate-300 mt-1">
+                    Aprende a responder en voz alta o por escrito con oraciones completas en <strong>Part A (Yes/No Questions)</strong> y <strong>Part B (WH-Questions)</strong>.
+                  </p>
+                </div>
+                <button data-next-step="SPEAK" class="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs">
+                  Ir a Entrenar Preguntas →
+                </button>
+              </div>
+
+              <!-- Estructuras Part A -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div class="rounded-2xl bg-[#090F22] border border-sky-400/30 p-4 space-y-2">
+                  <div class="text-xs font-bold uppercase text-sky-300">Part A · Estructura YES, I DID.</div>
+                  <p class="text-xs text-slate-200"><strong>YES, I DID.</strong> + additional information.</p>
+                  <p class="text-xs text-emerald-300 font-semibold">Modelo: "Yes, I did. I studied English yesterday."</p>
+                </div>
+                <div class="rounded-2xl bg-[#090F22] border border-violet-400/30 p-4 space-y-2">
+                  <div class="text-xs font-bold uppercase text-violet-300">Part A · Estructura NO, I DIDN'T.</div>
+                  <p class="text-xs text-slate-200"><strong>NO, I DIDN'T.</strong> + additional information.</p>
+                  <p class="text-xs text-amber-300 font-semibold">Modelo: "No, I didn't. I studied Mathematics instead."</p>
+                </div>
+              </div>
+
+              <!-- Modelos Part B -->
+              <div class="rounded-2xl bg-[#090F22] border border-teal-400/30 p-4 space-y-2">
+                <div class="text-xs font-bold uppercase text-teal-300">Part B · Modelos WH-Questions</div>
+                <ul class="text-xs sm:text-sm text-slate-200 space-y-1.5">
+                  <li>• <strong>Where did you go yesterday?</strong> → <span class="text-sky-300 font-semibold">I went to the mall.</span></li>
+                  <li>• <strong>What did you study yesterday?</strong> → <span class="text-sky-300 font-semibold">I studied Mathematics.</span></li>
+                  <li>• <strong>What time did you get up this morning?</strong> → <span class="text-sky-300 font-semibold">I got up at 7:00 a.m.</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Listado exacto de las 6 Yes/No + 8 WH-Questions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="rpg-panel rounded-2xl p-5 space-y-2.5">
+                <h3 class="font-display font-bold text-base text-sky-300">PART A – YES / NO QUESTIONS (6)</h3>
+                <ol class="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-slate-200">
+                  ${YES_NO_QUESTIONS.map(q => `<li>${escapeHtml(q.question)}</li>`).join('')}
+                </ol>
+              </div>
+              <div class="rpg-panel rounded-2xl p-5 space-y-2.5">
+                <h3 class="font-display font-bold text-base text-teal-300">PART B – WH-QUESTIONS (8)</h3>
+                <ol class="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-slate-200">
+                  ${WH_QUESTIONS.map(q => `<li>${escapeHtml(q.question)}</li>`).join('')}
+                </ol>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // PRACTICE, REMEMBER, SPEAK y CHALLENGE de World 4: práctica interactiva con timer, input/voz, SHOW ANSWER y RANDOM QUESTION
+      const pool = runtimeUI.speakingPool && runtimeUI.speakingPool.length > 0
+        ? runtimeUI.speakingPool
+        : ALL_SPEAKING_QUESTIONS;
+      const q = pool[runtimeUI.speakingIndex % pool.length];
+      const isYesNo = q.category === 'YES / NO';
+
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-bold uppercase ${isYesNo ? 'text-sky-300' : 'text-teal-300'}">
+                ${escapeHtml(q.category)} · Pregunta ${(runtimeUI.speakingIndex % pool.length) + 1} de ${pool.length}
+              </span>
+              <h2 class="font-display text-xl font-bold text-white">Entrenamiento de Respuesta Oral y Escrita</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                id="w4-random-mode-btn"
+                type="button"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold border transition ${
+                  runtimeUI.speakingRandomMode
+                    ? 'bg-violet-500 text-white border-violet-400'
+                    : 'bg-[#090F22] text-violet-300 border-violet-400/40 hover:bg-violet-500/15'
+                }"
+              >
+                🎲 RANDOM QUESTION: ${runtimeUI.speakingRandomMode ? 'ON' : 'OFF'}
+              </button>
+              <button id="w4-prev-q" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold">← Anterior</button>
+              <button id="w4-next-q" type="button" class="px-3 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold">Siguiente →</button>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-5 sm:p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span id="w4-timer-badge" class="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-200 text-xs font-bold">
+                ⏱️ Tiempo para pensar: ${runtimeUI.speakingTimer}s
+              </span>
+              <button id="w4-restart-timer" type="button" class="text-xs text-sky-300 hover:underline font-semibold">
+                Reiniciar cuenta (10s)
+              </button>
+            </div>
+
+            <div class="font-display text-xl sm:text-2xl font-extrabold text-white leading-snug">
+              "${escapeHtml(q.question)}"
+            </div>
+
+            <p class="text-xs sm:text-sm text-slate-300">
+              Responde en voz alta o escribe tu respuesta aquí:
+            </p>
+            <textarea
+              id="w4-user-response"
+              rows="2"
+              placeholder="Escribe tu respuesta completa en inglés (opcional si practicas solo en voz alta)..."
+              class="w-full rounded-xl bg-[#111B38] border border-slate-700 focus:border-sky-400 focus:outline-none p-3 text-sm text-white"
+            ></textarea>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button
+                id="w4-show-answer-btn"
+                type="button"
+                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-400 to-sky-500 hover:brightness-110 text-slate-950 font-extrabold text-xs transition"
+              >
+                ${runtimeUI.speakingShowAnswer ? 'Ocultar respuesta modelo' : 'SHOW ANSWER'}
+              </button>
+              <button
+                id="w4-retry-q-btn"
+                type="button"
+                class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition"
+              >
+                Repetir pregunta
+              </button>
+            </div>
+
+            ${runtimeUI.speakingShowAnswer ? `
+              <div class="rounded-2xl bg-[#111D3E] border border-teal-400/40 p-4 space-y-2.5 animate-fade-up">
+                <div class="text-xs font-bold uppercase text-teal-300">Respuesta Modelo</div>
+                ${isYesNo ? `
+                  <p class="text-sm text-emerald-300 font-semibold">Opción YES: "${escapeHtml(q.modelYes)}"</p>
+                  <p class="text-sm text-amber-300 font-semibold">Opción NO: "${escapeHtml(q.modelNo)}"</p>
+                ` : `
+                  <p class="text-sm text-emerald-300 font-semibold">Modelo: "${escapeHtml(q.modelAnswer)}"</p>
+                `}
+                <div class="pt-2 border-t border-slate-700/70 text-xs sm:text-sm text-slate-200">
+                  <strong>Explicación en español:</strong> ${escapeHtml(q.esHint)}
+                </div>
+              </div>
+            ` : `
+              <div class="text-xs text-slate-400">
+                ${runtimeUI.speakingRandomMode ? 'Modo aleatorio activo: respuesta oculta hasta que pulses SHOW ANSWER.' : 'Piensa tu respuesta en voz alta o escríbela, y luego pulsa SHOW ANSWER.'}
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindWorld4Events(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('world', 'world4', btn.getAttribute('data-next-step')));
+      });
+
+      if (stepKey !== 'LEARN') {
+        if (!runtimeUI.speakingTimerRunning && runtimeUI.speakingTimer === 10) {
+          startSpeakingCountdown();
+        }
+
+        const randBtn = document.getElementById('w4-random-mode-btn');
+        if (randBtn) {
+          randBtn.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.speakingRandomMode = !runtimeUI.speakingRandomMode;
+            runtimeUI.speakingPool = runtimeUI.speakingRandomMode
+              ? shuffleArray(ALL_SPEAKING_QUESTIONS)
+              : ALL_SPEAKING_QUESTIONS;
+            runtimeUI.speakingIndex = 0;
+            runtimeUI.speakingShowAnswer = false;
+            renderView();
+            startSpeakingCountdown();
+          });
+        }
+
+        const prevQ = document.getElementById('w4-prev-q');
+        const nextQ = document.getElementById('w4-next-q');
+        if (prevQ) prevQ.addEventListener('click', () => {
+          SoundFX.click();
+          const len = runtimeUI.speakingPool.length || ALL_SPEAKING_QUESTIONS.length;
+          runtimeUI.speakingIndex = (runtimeUI.speakingIndex - 1 + len) % len;
+          runtimeUI.speakingShowAnswer = false;
+          renderView();
+          startSpeakingCountdown();
+        });
+        if (nextQ) nextQ.addEventListener('click', () => {
+          SoundFX.click();
+          const len = runtimeUI.speakingPool.length || ALL_SPEAKING_QUESTIONS.length;
+          runtimeUI.speakingIndex = (runtimeUI.speakingIndex + 1) % len;
+          runtimeUI.speakingShowAnswer = false;
+          awardReward({ xp: 10, coins: 4, activityKey: 'world4:arena_practice' });
+          renderView();
+          startSpeakingCountdown();
+        });
+
+        const restartTimer = document.getElementById('w4-restart-timer');
+        if (restartTimer) {
+          restartTimer.addEventListener('click', () => {
+            SoundFX.click();
+            startSpeakingCountdown();
+          });
+        }
+
+        const showAnsBtn = document.getElementById('w4-show-answer-btn');
+        if (showAnsBtn) {
+          showAnsBtn.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.speakingShowAnswer = !runtimeUI.speakingShowAnswer;
+            awardReward({
+              xp: 10,
+              stars: 1,
+              coins: 5,
+              activityKey: 'world4:speaking_star',
+              reasonEs: '¡Practicaste tu respuesta en Speaking Arena!'
+            });
+            renderView();
+          });
+        }
+
+        const retryBtn = document.getElementById('w4-retry-q-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            SoundFX.click();
+            runtimeUI.speakingShowAnswer = false;
+            const ta = document.getElementById('w4-user-response');
+            if (ta) ta.value = '';
+            renderView();
+            startSpeakingCountdown();
+          });
+        }
+      }
+    }
+
+    /* =========================================================================
+       13. WORLD 5 – FINAL BOSS: ORAL EXAM (SIMULACIÓN ALTERNADA + AUTOEVALUACIÓN)
+       ========================================================================= */
+    function buildAlternatingExamSet(totalQuestions = 6) {
+      const ynPool = shuffleArray(YES_NO_QUESTIONS);
+      const whPool = shuffleArray(WH_QUESTIONS);
+      const set = [];
+      for (let i = 0; i < totalQuestions; i++) {
+        if (i % 2 === 0) {
+          set.push(ynPool[Math.floor(i / 2) % ynPool.length]);
+        } else {
+          set.push(whPool[Math.floor(i / 2) % whPool.length]);
+        }
+      }
+      return set;
+    }
+
+    function startExam10sTimer() {
+      if (examIntervalId) {
+        clearInterval(examIntervalId);
+        examIntervalId = null;
+      }
+      runtimeUI.examTimer = 10;
+      runtimeUI.examTimerActive = true;
+      updateExamTimerDOM();
+
+      examIntervalId = setInterval(() => {
+        if (runtimeUI.examTimer > 1) {
+          runtimeUI.examTimer -= 1;
+          updateExamTimerDOM();
+        } else {
+          runtimeUI.examTimer = 0;
+          runtimeUI.examTimerActive = false;
+          clearInterval(examIntervalId);
+          examIntervalId = null;
+          updateExamTimerDOM();
+        }
+      }, 1000);
+    }
+
+    function updateExamTimerDOM() {
+      const el = document.getElementById('w5-timer-display');
+      if (el) {
+        el.textContent = runtimeUI.examTimer > 0
+          ? `${runtimeUI.examTimer}s para pensar`
+          : '0s · ¡Pulsa START SPEAKING!';
+      }
+    }
+
+    function renderWorld5Step(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+            <h2 class="font-display text-xl sm:text-2xl font-bold text-white">👑 World 5 – Final Boss: Oral Exam</h2>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Esta simulación replica una evaluación oral individual de nivel A1:
+            </p>
+            <ul class="space-y-2 text-xs sm:text-sm text-slate-200 list-disc list-inside">
+              <li><strong>Sin traducciones automáticas ni pistas iniciales:</strong> entrenarás sin depender de ayudas.</li>
+              <li><strong>Preguntas alternadas:</strong> mezcla preguntas <strong>YES/NO</strong> y <strong>WH-QUESTIONS</strong> de las 14 preguntas de Speaking Arena, una a la vez.</li>
+              <li><strong>10 segundos para pensar</strong> antes de hablar, botón <strong>START SPEAKING</strong> y botón <strong>SHOW MODEL ANSWER</strong>.</li>
+              <li><strong>Autoevaluación honesta:</strong> al final verás un informe con tu desempeño.</li>
+            </ul>
+            <div class="pt-2">
+              <button data-next-step="CHALLENGE" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-xs">
+                Ir a Simulación Final Boss →
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      if (runtimeUI.examPhase === 'intro') {
+        return `
+          <div class="rpg-panel rounded-2xl p-6 text-center space-y-4 border border-amber-400/35">
+            <div class="text-4xl">👑⚔️</div>
+            <h2 class="font-display text-2xl font-extrabold text-white">FINAL BOSS: ORAL EXAM SIMULATION</h2>
+            <p class="text-sm text-slate-300 max-w-xl mx-auto">
+              Responderás 6 preguntas alternadas (YES/NO y WH-QUESTIONS). Tendrás <strong>10 segundos</strong> para pensar cada pregunta, podrás hablar en voz alta y luego autoevaluarte.
+            </p>
+            <button
+              id="w5-start-exam-btn"
+              type="button"
+              class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:brightness-110 text-slate-950 font-display font-extrabold text-sm shadow-glow-gold transition"
+            >
+              Comenzar Examen Oral
+            </button>
+          </div>
+        `;
+      }
+
+      if (runtimeUI.examPhase === 'report') {
+        const total = runtimeUI.examLogs.length || 1;
+        const correctCount = runtimeUI.examLogs.filter(x => x.correct).length;
+        const fullSentCount = runtimeUI.examLogs.filter(x => x.fullSentence).length;
+        const structCount = runtimeUI.examLogs.filter(x => x.structureOk).length;
+
+        return `
+          <div class="rpg-panel rounded-2xl p-6 space-y-5 border border-teal-400/40">
+            <div class="text-center space-y-1.5">
+              <div class="text-3xl">🏅</div>
+              <h2 class="font-display text-2xl font-extrabold text-white">Informe Final de Desempeño Oral</h2>
+              <p class="text-xs text-slate-400">
+                Nota: esta autoevaluación refleja tu práctica oral individual (no mide pronunciación acústica de audio).
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4">
+                <div class="text-xs text-slate-400">Respuestas Correctas</div>
+                <div class="font-display font-extrabold text-2xl text-emerald-300 mt-1">${correctCount} / ${total}</div>
+              </div>
+              <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4">
+                <div class="text-xs text-slate-400">Oración Completa</div>
+                <div class="font-display font-extrabold text-2xl text-sky-300 mt-1">${fullSentCount} / ${total}</div>
+              </div>
+              <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4">
+                <div class="text-xs text-slate-400">Estructura Correcta</div>
+                <div class="font-display font-extrabold text-2xl text-amber-300 mt-1">${structCount} / ${total}</div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-4 space-y-2 text-xs sm:text-sm text-slate-200">
+              <p><strong class="text-teal-300">Fortalezas y consejo en español:</strong> ${
+                fullSentCount === total
+                  ? '¡Excelente! Mantuviste oraciones completas en todas las preguntas. Sigue practicando la fluidez en pasado.'
+                  : 'Buen avance. Procura responder siempre con oración completa (por ejemplo: "Yes, I did. I studied English yesterday." o "I went to the mall.") en vez de responder solo una palabra.'
+              }</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-3">
+              <button id="w5-retry-exam-btn" type="button" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-xs">
+                Repetir Examen Oral
+              </button>
+              <button id="w5-to-progress-btn" type="button" class="px-5 py-3 rounded-xl bg-[#131D3E] hover:bg-[#1C2B5C] border border-sky-400/30 text-sky-200 font-bold text-xs">
+                Ver Insignias y Progreso →
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Fase 'question': una pregunta a la vez, sin traducciones automáticas ni pistas iniciales
+      const currentQ = runtimeUI.examQuestions[runtimeUI.examIndex];
+      const isYN = currentQ.category === 'YES / NO';
+
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-5 border border-amber-400/30">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-200 text-xs font-bold">
+              Pregunta ${runtimeUI.examIndex + 1} de ${runtimeUI.examQuestions.length} · ${escapeHtml(currentQ.category)}
+            </span>
+            <span id="w5-timer-display" class="px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/35 text-sky-200 text-xs font-bold">
+              ${runtimeUI.examTimer}s para pensar
+            </span>
+          </div>
+
+          <div class="rounded-2xl bg-[#090F22] border border-slate-800 p-6 space-y-5">
+            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-white">
+              ${escapeHtml(currentQ.question)}
+            </h2>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button
+                id="w5-start-speaking-btn"
+                type="button"
+                class="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 hover:brightness-110 text-white font-display font-bold text-xs transition"
+              >
+                🎙️ START SPEAKING
+              </button>
+              <button
+                id="w5-show-model-btn"
+                type="button"
+                class="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs transition"
+              >
+                SHOW MODEL ANSWER
+              </button>
+            </div>
+
+            ${runtimeUI.examSpeakingStarted ? `
+              <div class="rounded-xl bg-blue-500/10 border border-blue-400/35 p-3.5 text-xs sm:text-sm text-sky-200">
+                <strong>Hablando en voz alta (autopráctica):</strong> di tu respuesta completa en inglés ahora y luego revisa la respuesta modelo y autoevalúate.
+              </div>
+            ` : ''}
+
+            ${runtimeUI.examShowModel ? `
+              <div class="rounded-2xl bg-[#121D3E] border border-teal-400/40 p-4 space-y-2 animate-fade-up">
+                <div class="text-xs font-bold uppercase text-teal-300">Respuesta Modelo</div>
+                ${isYN ? `
+                  <p class="text-sm text-emerald-300 font-semibold">YES: "${escapeHtml(currentQ.modelYes)}"</p>
+                  <p class="text-sm text-amber-300 font-semibold">NO: "${escapeHtml(currentQ.modelNo)}"</p>
+                ` : `
+                  <p class="text-sm text-emerald-300 font-semibold">"${escapeHtml(currentQ.modelAnswer)}"</p>
+                `}
+                <p class="text-xs text-slate-300 pt-1">${escapeHtml(currentQ.esHint)}</p>
+              </div>
+            ` : ''}
+
+            <!-- Autoevaluación de la estudiante -->
+            <div class="pt-4 border-t border-slate-800 space-y-3">
+              <div class="text-xs font-bold uppercase text-amber-300">Autoevaluación de tu respuesta:</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <label class="flex items-center gap-2 rounded-xl bg-[#111B38] border border-slate-700 p-3 cursor-pointer">
+                  <input id="w5-chk-correct" type="checkbox" checked class="rounded accent-emerald-400" />
+                  <span>Respondí correctamente</span>
+                </label>
+                <label class="flex items-center gap-2 rounded-xl bg-[#111B38] border border-slate-700 p-3 cursor-pointer">
+                  <input id="w5-chk-full" type="checkbox" checked class="rounded accent-sky-400" />
+                  <span>Usé oración completa</span>
+                </label>
+                <label class="flex items-center gap-2 rounded-xl bg-[#111B38] border border-slate-700 p-3 cursor-pointer">
+                  <input id="w5-chk-struct" type="checkbox" checked class="rounded accent-amber-400" />
+                  <span>Estructura correcta</span>
+                </label>
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button
+                  id="w5-submit-self-eval-btn"
+                  type="button"
+                  class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition"
+                >
+                  ${runtimeUI.examIndex + 1 === runtimeUI.examQuestions.length ? 'Guardar y Ver Informe Final →' : 'Guardar y Siguiente Pregunta →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindWorld5Events(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('world', 'world5', btn.getAttribute('data-next-step')));
+      });
+
+      const startBtn = document.getElementById('w5-start-exam-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.examQuestions = buildAlternatingExamSet(6);
+          runtimeUI.examIndex = 0;
+          runtimeUI.examLogs = [];
+          runtimeUI.examPhase = 'question';
+          runtimeUI.examSpeakingStarted = false;
+          runtimeUI.examShowModel = false;
+          renderView();
+          startExam10sTimer();
+        });
+      }
+
+      const speakBtn = document.getElementById('w5-start-speaking-btn');
+      if (speakBtn) {
+        speakBtn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.examSpeakingStarted = true;
+          renderView();
+        });
+      }
+
+      const showModelBtn = document.getElementById('w5-show-model-btn');
+      if (showModelBtn) {
+        showModelBtn.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.examShowModel = !runtimeUI.examShowModel;
+          renderView();
+        });
+      }
+
+      const evalBtn = document.getElementById('w5-submit-self-eval-btn');
+      if (evalBtn) {
+        evalBtn.addEventListener('click', () => {
+          const cCorrect = Boolean(document.getElementById('w5-chk-correct')?.checked);
+          const cFull = Boolean(document.getElementById('w5-chk-full')?.checked);
+          const cStruct = Boolean(document.getElementById('w5-chk-struct')?.checked);
+          const q = runtimeUI.examQuestions[runtimeUI.examIndex];
+
+          runtimeUI.examLogs.push({
+            question: q.question,
+            correct: cCorrect,
+            fullSentence: cFull,
+            structureOk: cStruct
+          });
+
+          const earnedXp = (cCorrect ? 10 : 0) + (cFull ? 5 : 0) + (cStruct ? 5 : 0);
+          if (earnedXp > 0) {
+            SoundFX.correct();
+            awardReward({ xp: earnedXp, coins: 5 });
+          } else {
+            SoundFX.click();
+          }
+
+          clearTimers();
+          if (runtimeUI.examIndex + 1 < runtimeUI.examQuestions.length) {
+            runtimeUI.examIndex += 1;
+            runtimeUI.examSpeakingStarted = false;
+            runtimeUI.examShowModel = false;
+            renderView();
+            startExam10sTimer();
+          } else {
+            const total = runtimeUI.examLogs.length;
+            const score = runtimeUI.examLogs.filter(x => x.correct).length;
+            const fulls = runtimeUI.examLogs.filter(x => x.fullSentence).length;
+            state.examHistory.push({
+              dateLabel: new Date().toLocaleDateString('es-CL'),
+              scoreLabel: `${score}/${total}`,
+              fullSentenceCount: fulls,
+              total
+            });
+            awardReward({
+              xp: 35,
+              stars: 2,
+              coins: 20,
+              activityKey: 'world5:exam_completed',
+              reasonEs: '¡Completaste la simulación Final Boss: Oral Exam!'
+            });
+            runtimeUI.examPhase = 'report';
+            renderView();
+          }
+        });
+      }
+
+      const retryExam = document.getElementById('w5-retry-exam-btn');
+      if (retryExam) {
+        retryExam.addEventListener('click', () => {
+          SoundFX.click();
+          runtimeUI.examQuestions = buildAlternatingExamSet(6);
+          runtimeUI.examIndex = 0;
+          runtimeUI.examLogs = [];
+          runtimeUI.examPhase = 'question';
+          runtimeUI.examSpeakingStarted = false;
+          runtimeUI.examShowModel = false;
+          renderView();
+          startExam10sTimer();
+        });
+      }
+
+      const toProg = document.getElementById('w5-to-progress-btn');
+      if (toProg) {
+        toProg.addEventListener('click', () => navigateTo('progress'));
+      }
+    }
+
+    /* =========================================================================
+       14. SPECIAL CONTENT: CHARACTER CHALLENGE (THOMAS, JACKSON, JENNY KIM)
+       ========================================================================= */
+    function renderCharactersStep(stepKey) {
+      if (stepKey === 'LEARN') {
+        return `
+          <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="font-display text-xl sm:text-2xl font-bold text-white">🧩 Special Mission – Character Challenge</h2>
+                <p class="text-sm text-slate-300 mt-1">
+                  Estudia las fichas exactas de <strong>THOMAS</strong>, <strong>JACKSON</strong> y <strong>JENNY KIM</strong> en pasado (Yesterday), rutina y ahora (Now).
+                </p>
+              </div>
+              <button data-next-step="CHALLENGE" class="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-extrabold text-xs">
+                Ir a Desafíos de Personajes →
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              ${CHARACTERS.map(ch => `
+                <div class="rounded-2xl bg-[#090F22] border ${ch.border} p-4 space-y-3">
+                  <div>
+                    <h3 class="font-display font-extrabold text-lg ${ch.accent}">${escapeHtml(ch.name)}</h3>
+                    <p class="text-xs text-slate-400">${escapeHtml(ch.role)}</p>
+                  </div>
+                  <div class="space-y-2 text-xs text-slate-200">
+                    <div class="rounded-xl bg-[#111B38] p-2.5">
+                      <span class="font-bold text-amber-300">Yesterday:</span>
+                      <p class="mt-0.5">${escapeHtml(ch.yesterday.join('; '))}</p>
+                    </div>
+                    <div class="rounded-xl bg-[#111B38] p-2.5">
+                      <span class="font-bold text-sky-300">${escapeHtml(ch.routineLabel)}:</span>
+                      <p class="mt-0.5">${escapeHtml(ch.routineItems.join('; '))}</p>
+                    </div>
+                    <div class="rounded-xl bg-[#111B38] p-2.5">
+                      <span class="font-bold text-teal-300">Now:</span>
+                      <p class="mt-0.5">${escapeHtml(ch.nowItems.join('; '))}</p>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // CHALLENGE (y demás pasos): desafíos interactivos sobre los personajes
+      const chQ = CHARACTER_CHALLENGES[0];
+      return `
+        <div class="rpg-panel rounded-2xl p-5 sm:p-6 space-y-4">
+          <div>
+            <span class="text-xs font-bold uppercase text-cyan-300">${escapeHtml(chQ.character)} · ${escapeHtml(chQ.timeframe)}</span>
+            <h2 class="font-display text-xl font-bold text-white">${escapeHtml(chQ.prompt)}</h2>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2.5">
+            ${shuffleArray(chQ.options).map(opt => `
+              <button
+                type="button"
+                data-ch-opt="${escapeHtml(opt)}"
+                data-ch-ans="${escapeHtml(chQ.answer)}"
+                class="p-3.5 rounded-xl bg-[#090F22] hover:bg-cyan-500/15 border border-slate-700 hover:border-cyan-400 text-left text-xs sm:text-sm font-semibold text-white transition"
+              >
+                ${escapeHtml(opt)}
+              </button>
+            `).join('')}
+          </div>
+          <div id="ch-feedback" class="text-xs sm:text-sm font-semibold"></div>
+        </div>
+      `;
+    }
+
+    function bindCharactersEvents(stepKey) {
+      document.querySelectorAll('[data-next-step]').forEach(btn => {
+        btn.addEventListener('click', () => navigateTo('world', 'characters', btn.getAttribute('data-next-step')));
+      });
+
+      if (stepKey !== 'LEARN') {
+        document.querySelectorAll('[data-ch-opt]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const chosen = btn.getAttribute('data-ch-opt');
+            const ans = btn.getAttribute('data-ch-ans');
+            const fb = document.getElementById('ch-feedback');
+            if (chosen === ans) {
+              SoundFX.correct();
+              awardReward({
+                xp: 20,
+                stars: 1,
+                coins: 10,
+                activityKey: 'characters:challenge',
+                reasonEs: '¡Interpretaste la ficha del personaje correctamente!'
+              });
+              if (fb) fb.innerHTML = `<span class="text-emerald-300">Correct! ${escapeHtml(CHARACTER_CHALLENGES[0].es)}</span>`;
+            } else {
+              SoundFX.wrong();
+              if (fb) fb.innerHTML = `<span class="text-rose-300">Try again! Revisa los datos de THOMAS en "Yesterday".</span>`;
+            }
+          });
+        });
+      }
+    }
+
+    /* =========================================================================
+       15. INICIALIZACIÓN GLOBAL DE LA APLICACIÓN
+       ========================================================================= */
+    function initApp() {
+      const brandBtn = document.getElementById('brand-home-btn');
+      if (brandBtn) {
+        brandBtn.addEventListener('click', () => navigateTo('home'));
+      }
+
+      document.querySelectorAll('[data-nav]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetView = btn.getAttribute('data-nav');
+          navigateTo(targetView);
+        });
+      });
+
+      const soundBtn = document.getElementById('sound-toggle-btn');
+      const iconOn = document.getElementById('sound-icon-on');
+      const iconOff = document.getElementById('sound-icon-off');
+      if (soundBtn) {
+        soundBtn.addEventListener('click', () => {
+          const next = !SoundFX.isEnabled();
+          SoundFX.setEnabled(next);
+          if (iconOn && iconOff) {
+            iconOn.classList.toggle('hidden', !next);
+            iconOff.classList.toggle('hidden', next);
+          }
+          if (next) SoundFX.click();
+        });
+      }
+
+      runtimeUI.quizQuestions = buildVocabQuiz10();
+      setupMemoryGame();
+      syncNavHighlights();
+      renderView();
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
